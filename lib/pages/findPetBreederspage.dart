@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'hamburger_menu.dart';
 
 class FindPetBreeders extends StatefulWidget {
   const FindPetBreeders({super.key});
@@ -95,34 +96,33 @@ class _FindPetBreedersState extends State<FindPetBreeders> {
               color: Colors.grey[300],
               borderRadius: BorderRadius.circular(25),
             ),
-            child: Row(
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.menu, color: Colors.grey),
-                  onPressed: () {
-                    // Placeholder for menu action
-                  },
-                ),
-                Expanded(
-                  child: TextField(
-                    onChanged: (value) => _runFilter(value),
-                    decoration: const InputDecoration(
-                      hintText: 'Search for Pet Breeders',
-                      border: InputBorder.none,
-                      contentPadding: EdgeInsets.only(left: 10),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 10),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween, // Align items
+                children: [
+                  Expanded(
+                    child: TextField(
+                      onChanged: (value) => _runFilter(value),
+                      decoration: const InputDecoration(
+                        hintText: 'Search for Pet Breeders',
+                        border: InputBorder.none,
+                        contentPadding: EdgeInsets.only(left: 10),
+                      ),
                     ),
                   ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.search, color: Colors.grey),
-                  onPressed: () {
-                    // Placeholder for search button
-                  },
-                ),
-              ],
+                  IconButton(
+                    icon: const Icon(Icons.search, color: Colors.grey),
+                    onPressed: () {
+                      // Placeholder for search button
+                    },
+                  ),
+                ],
+              ),
             ),
           ),
         ),
+        drawer: HamburgerMenu(), // Add HamburgerMenu as drawer content
         body: _foundUsers.isNotEmpty
             ? ListView.separated(
           itemBuilder: (context, index) {
