@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:petpals/pages/chatPage.dart';
 import 'package:petpals/pages/findPetBreederspage.dart';
+import 'package:petpals/pages/findPetpalspage.dart';
 import 'package:petpals/services/auth/login_or_reg.dart';
 import 'pages/landingpage.dart';
 import 'pages/findPetBreederspage.dart';
@@ -18,7 +20,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: FindPetBreeders(),
+      home: LandingPage(),
     );
   }
 }

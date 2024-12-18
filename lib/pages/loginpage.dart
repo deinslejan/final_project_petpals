@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:petpals/pages/chatPage.dart';
 import '../components/button.dart';
 import '../components/textfield.dart';
 import 'findPetpalspage.dart';
@@ -24,7 +25,7 @@ class _LoginPageState extends State<LoginPage> {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => const FindPetpals(),
+          builder: (context) => const ChatPage(),
         ),
       );
     } else {

@@ -124,7 +124,7 @@ class _FindPetpalsState extends State<FindPetpals> {
                     child: TextField(
                       onChanged: (value) => _runFilter(value),
                       decoration: const InputDecoration(
-                        hintText: 'Search for Pet Breeders',
+                        hintText: 'Search for Pet Pals',
                         border: InputBorder.none,
                         contentPadding: EdgeInsets.only(left: 10),
                       ),
