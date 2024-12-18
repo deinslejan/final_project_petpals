@@ -12,37 +12,129 @@ class ChatPage extends StatefulWidget {
 class _ChatPageFilter extends State<ChatPage> {
   // Data for each category
   final List<Map<String, dynamic>> _petPals = [
-    {"name": "KKUMA", "location": "España, Manila", "image": "images/kkuma.png"},
-    {"name": "BOKKEU", "location": "España, Manila", "image": "images/bokkeu.png"},
-    {"name": "SAPPHIRE", "location": "BGC, Taguig", "image": "images/sapphire.png"},
-    {"name": "BAM BOO", "location": "Litex, Quezon City", "image": "images/bamboo.png"},
-    {"name": "MR. DARCY", "location": "España, Manila", "image": "images/darcy.png"},
+    {
+      "name": "KKUMA",
+      "location": "España, Manila",
+      "image": "images/kkuma.png"
+    },
+    {
+      "name": "BOKKEU",
+      "location": "España, Manila",
+      "image": "images/bokkeu.png"
+    },
+    {
+      "name": "SAPPHIRE",
+      "location": "BGC, Taguig",
+      "image": "images/sapphire.png"
+    },
+    {
+      "name": "BAM BOO",
+      "location": "Litex, Quezon City",
+      "image": "images/bamboo.png"
+    },
+    {
+      "name": "MR. DARCY",
+      "location": "España, Manila",
+      "image": "images/darcy.png"
+    },
     {"name": "ALVIN", "location": "Baguio", "image": "images/alvin.png"},
     {"name": "ALASTOR", "location": "Tagaytay", "image": "images/alastor.png"},
-    {"name": "CAPT. SPARROW", "location": "Bulakan, Bulacan", "image": "images/sparrow.png"},
-    {"name": "SIMBA", "location": "Silang, Cavite", "image": "images/simba.png"},
+    {
+      "name": "CAPT. SPARROW",
+      "location": "Bulakan, Bulacan",
+      "image": "images/sparrow.png"
+    },
+    {
+      "name": "SIMBA",
+      "location": "Silang, Cavite",
+      "image": "images/simba.png"
+    },
   ];
 
   final List<Map<String, dynamic>> _petBreeders = [
-    {"name": "DIEGO", "location": "Makati City", "image": "images/petBreeders/diego.png"},
-    {"name": "MJ", "location": "BGC, Taguig", "image": "images/petBreeders/mj.png"},
-    {"name": "MARK", "location": "Baguio City", "image": "images/petBreeders/mark.png"},
-    {"name": "SAMUEL", "location": "Jaro, Iloilo", "image": "images/petBreeders/samuel.png"},
-    {"name": "BEYONCE", "location": "España, Manila", "image": "images/petBreeders/beyonce.png"},
-    {"name": "JAMES", "location": "Poblacion, Makati", "image": "images/alvin.png"},
-    {"name": "GISELLE", "location": "Taft Ave, Manila", "image": "images/petBreeders/giselle.png"},
-    {"name": "CHARLIE", "location": "España, Manila", "image": "images/petBreeders/charlie.png"},
+    {
+      "name": "DIEGO",
+      "location": "Makati City",
+      "image": "images/petBreeders/diego.png"
+    },
+    {
+      "name": "MJ",
+      "location": "BGC, Taguig",
+      "image": "images/petBreeders/mj.png"
+    },
+    {
+      "name": "MARK",
+      "location": "Baguio City",
+      "image": "images/petBreeders/mark.png"
+    },
+    {
+      "name": "SAMUEL",
+      "location": "Jaro, Iloilo",
+      "image": "images/petBreeders/samuel.png"
+    },
+    {
+      "name": "BEYONCE",
+      "location": "España, Manila",
+      "image": "images/petBreeders/beyonce.png"
+    },
+    {
+      "name": "JAMES",
+      "location": "Poblacion, Makati",
+      "image": "images/alvin.png"
+    },
+    {
+      "name": "GISELLE",
+      "location": "Taft Ave, Manila",
+      "image": "images/petBreeders/giselle.png"
+    },
+    {
+      "name": "CHARLIE",
+      "location": "España, Manila",
+      "image": "images/petBreeders/charlie.png"
+    },
   ];
 
   final List<Map<String, dynamic>> _petSitters = [
-    {"name": "MIGOY", "location": "Bulacan", "image": "images/petSitters/mingyu.png"},
-    {"name": "BASTI", "location": "España, Manila", "image": "images/petSitters/jeno.png"},
-    {"name": "LEJAN", "location": "Novaliches, Quezon City", "image": "images/petSitters/lejan.png"},
-    {"name": "JAMIE", "location": "Makati City", "image": "images/petSitters/jamie.png"},
-    {"name": "JELO", "location": "España, Manila", "image": "images/petSitters/jeonghan.png"},
-    {"name": "BEA", "location": "San Jose del Monte, Bulacan", "image": "images/petSitters/bea.png"},
-    {"name": "HANBIN", "location": "Valenzuela", "image": "images/petSitters/haobin1.png"},
-    {"name": "HAO", "location": "Valenzuela", "image": "images/petSitters/haobin2.png"},
+    {
+      "name": "MIGOY",
+      "location": "Bulacan",
+      "image": "images/petSitters/mingyu.png"
+    },
+    {
+      "name": "BASTI",
+      "location": "España, Manila",
+      "image": "images/petSitters/jeno.png"
+    },
+    {
+      "name": "LEJAN",
+      "location": "Novaliches, Quezon City",
+      "image": "images/petSitters/lejan.png"
+    },
+    {
+      "name": "JAMIE",
+      "location": "Makati City",
+      "image": "images/petSitters/jamie.png"
+    },
+    {
+      "name": "JELO",
+      "location": "España, Manila",
+      "image": "images/petSitters/jeonghan.png"
+    },
+    {
+      "name": "BEA",
+      "location": "San Jose del Monte, Bulacan",
+      "image": "images/petSitters/bea.png"
+    },
+    {
+      "name": "HANBIN",
+      "location": "Valenzuela",
+      "image": "images/petSitters/haobin1.png"
+    },
+    {
+      "name": "HAO",
+      "location": "Valenzuela",
+      "image": "images/petSitters/haobin2.png"
+    },
   ];
 
   List<Map<String, dynamic>> _foundUsers = [];
@@ -102,7 +194,8 @@ class _ChatPageFilter extends State<ChatPage> {
 
       // Filter users where the name starts with the search keyword
       results = activeList.where((user) {
-        String userName = user["name"]?.toLowerCase().trim() ?? ""; // Safely handle null
+        String userName =
+            user["name"]?.toLowerCase().trim() ?? ""; // Safely handle null
         String keyword = query.toLowerCase().trim();
         print('Comparing: "$userName" starts with "$keyword"'); // Debugging log
         return userName.startsWith(keyword);
@@ -129,7 +222,8 @@ class _ChatPageFilter extends State<ChatPage> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      theme: ThemeData(textTheme: GoogleFonts.jostTextTheme()), // Apply the Jost font
+      theme: ThemeData(
+          textTheme: GoogleFonts.jostTextTheme()), // Apply the Jost font
       home: Scaffold(
         appBar: AppBar(
           toolbarHeight: 80, // Increase AppBar height
@@ -149,7 +243,8 @@ class _ChatPageFilter extends State<ChatPage> {
                   const SizedBox(width: 10),
                   Expanded(
                     child: TextField(
-                      onChanged: (value) => _runFilter(value), // Search function
+                      onChanged: (value) =>
+                          _runFilter(value), // Search function
                       decoration: const InputDecoration(
                         hintText: 'Search for Pet Breeders',
                         border: InputBorder.none,
@@ -191,34 +286,37 @@ class _ChatPageFilter extends State<ChatPage> {
             Expanded(
               child: _foundUsers.isNotEmpty
                   ? ListView.separated(
-                itemBuilder: (context, index) {
-                  return ListTile(
-                    leading: CircleAvatar(
-                      backgroundImage:
-                      AssetImage(_foundUsers[index]['image']),
-                      radius: 30,
-                    ),
-                    title: Text(
-                      _foundUsers[index]['name'],
-                      style: const TextStyle(
-                          fontSize: 20, fontWeight: FontWeight.bold),
-                    ),
-                    subtitle: Text(
-                      "Location: ${_foundUsers[index]['location']}",
-                      style: const TextStyle(fontSize: 16),
-                    ),
-                  );
-                },
-                separatorBuilder: (context, index) =>
-                const Divider(thickness: 0.5),
-                itemCount: _foundUsers.length,
-              )
+                      itemBuilder: (context, index) {
+                        return ListTile(
+                          leading: CircleAvatar(
+                            backgroundImage:
+                                AssetImage(_foundUsers[index]['image']),
+                            radius: 30,
+                          ),
+                          title: Text(
+                            _foundUsers[index]['name'],
+                            style: const TextStyle(
+                              fontFamily: 'Bebas Neue',
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          subtitle: Text(
+                            "Location: ${_foundUsers[index]['location']}",
+                            style: const TextStyle(fontSize: 16),
+                          ),
+                        );
+                      },
+                      separatorBuilder: (context, index) =>
+                          const Divider(thickness: 0.5),
+                      itemCount: _foundUsers.length,
+                    )
                   : const Center(
-                child: Text(
-                  'No results found',
-                  style: TextStyle(fontSize: 18),
-                ),
-              ),
+                      child: Text(
+                        'No results found',
+                        style: TextStyle(fontSize: 18),
+                      ),
+                    ),
             ),
           ],
         ),
