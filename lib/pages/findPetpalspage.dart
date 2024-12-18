@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'hamburger_menu.dart';
+import 'petProfile.dart';
 
 class FindPetpals extends StatefulWidget {
   const FindPetpals({super.key});
@@ -80,11 +82,11 @@ class _FindPetpalsState extends State<FindPetpals> {
     if (enteredKeyword.isEmpty) {
       results = _sampleUsers; // Show all pets if no keyword
     } else {
-      results = _sampleUsers
-          .where((user) => user["name"]
-          .toLowerCase()
-          .contains(enteredKeyword.toLowerCase()))
-          .toList(); // Filter by name
+      results = _sampleUsers.where((user) {
+        String userName = user["name"].toLowerCase().trim();
+        String keyword = enteredKeyword.toLowerCase().trim();
+        return userName.startsWith(keyword); // Match if the name starts with the entered keyword
+      }).toList();
     }
     setState(() {
       _foundUsers = results;
@@ -98,67 +100,73 @@ class _FindPetpalsState extends State<FindPetpals> {
         textTheme: GoogleFonts.jostTextTheme(),
       ),
       home: Scaffold(
-        backgroundColor: Colors.white,
         appBar: AppBar(
-          toolbarHeight: 80, // Increase the AppBar height
+          toolbarHeight: 80,
           backgroundColor: const Color(0xFFFFCA4F),
           title: Container(
-            margin: const EdgeInsets.only(top: 10),
             height: 50,
+            width: 390,
             decoration: BoxDecoration(
               color: Colors.grey[300],
               borderRadius: BorderRadius.circular(25),
             ),
-            child: Row(
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.menu, color: Colors.grey),
-                  onPressed: () {
-                    // Placeholder for menu action
-                  },
-                ),
-                Expanded(
-                  child: TextField(
-                    onChanged: (value) => _runFilter(value),
-                    decoration: const InputDecoration(
-                      hintText: 'Search for your Petpals',
-                      border: InputBorder.none,
-                      contentPadding: EdgeInsets.only(left: 10),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 15),
+              child: Row(
+                children: [
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: TextField(
+                      onChanged: (value) => _runFilter(value),
+                      decoration: const InputDecoration(
+                        hintText: 'Search for Pet Breeders',
+                        border: InputBorder.none,
+                        contentPadding: EdgeInsets.only(left: 10),
+                      ),
                     ),
                   ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.search, color: Colors.grey),
-                  onPressed: () {
-                    // Placeholder for search button
-                  },
-                ),
-              ],
+                  IconButton(
+                    icon: const Icon(Icons.search, color: Colors.grey),
+                    onPressed: () {},
+                  ),
+                ],
+              ),
             ),
           ),
         ),
+        drawer: HamburgerMenu(),
         body: _foundUsers.isNotEmpty
             ? ListView.separated(
           itemBuilder: (context, index) {
-            return ListTile(
-              leading: CircleAvatar(
-                backgroundImage:
-                AssetImage(_foundUsers[index]['image']),
-                radius: 30,
-              ),
-              title: Text(
-                _foundUsers[index]['name'],
-                style: const TextStyle(
-                  fontFamily: 'Bebas Neue',
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
+            final pet = _foundUsers[index];
+            return InkWell(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => PetProfilePage(),
+                  ),
+                );
+              },
+              child: ListTile(
+                leading: CircleAvatar(
+                  backgroundImage: AssetImage(pet['image']),
+                  radius: 30,
                 ),
-              ),
-              subtitle: Text(
-                "${_foundUsers[index]['breed']}\nLocation: ${_foundUsers[index]['location']}",
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w400,
+                title: Text(
+                  pet['name'],
+                  style: const TextStyle(
+                    fontFamily: 'Bebas Neue',
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                subtitle: Text(
+                  "Location: ${pet['location']}",
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w400,
+                  ),
                 ),
               ),
             );

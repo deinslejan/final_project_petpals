@@ -99,16 +99,15 @@ class _FindPetSittersState extends State<FindPetSitters> {
             toolbarHeight: 80,
           backgroundColor: const Color(0xFFFFCA4F),
           title: Container(
-            margin: const EdgeInsets.only(top: 10),
             height: 50,
             decoration: BoxDecoration(
               color: Colors.grey[300],
               borderRadius: BorderRadius.circular(25),
             ),
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 15),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                mainAxisAlignment: MainAxisAlignment.start,
                 children: [
                   IconButton(
                     icon: const Icon(Icons.menu, color: Colors.grey),
@@ -142,30 +141,30 @@ class _FindPetSittersState extends State<FindPetSitters> {
           itemCount: _foundUsers.length,
           itemBuilder: (context, index) {
             return ListTile(
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              leading: CircleAvatar(
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                leading: CircleAvatar(
                 backgroundImage: AssetImage(_foundUsers[index]['image']),
-                radius: 30,
-              ),
-              title: Text(
-                _foundUsers[index]['name'],
-                style: const TextStyle(
-                  fontFamily: 'Bebas Neue',
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              subtitle: Text(
-                _foundUsers[index]['location'],
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w400,
-                ),
-              ),
-              trailing: SizedBox(
-                width: 100, // Constrain the width of the star rating
-                child: StarRating(rating: _foundUsers[index]['rating']),
-              ),
+            radius: 30,
+            ),
+            title: Text(
+            _foundUsers[index]['name'],
+            style: const TextStyle(
+            fontFamily: 'Bebas Neue',
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            ),
+            ),
+            subtitle: Text(
+            _foundUsers[index]['location'],
+            style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w400,
+            ),
+            ),
+            trailing: SizedBox(
+            width: 100, // Constrain the width of the star rating
+            child: StarRating(rating: _foundUsers[index]['rating']),
+            ),
             );
           },
           separatorBuilder: (context, index) {
