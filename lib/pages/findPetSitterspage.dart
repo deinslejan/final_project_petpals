@@ -72,14 +72,19 @@ class _FindPetSittersState extends State<FindPetSitters> {
   // Filtering function
   void _runFilter(String enteredKeyword) {
     List<Map<String, dynamic>> results = [];
+    print('Entered Keyword: "$enteredKeyword"'); // Debugging the entered keyword
+
     if (enteredKeyword.isEmpty) {
-      results = sitters; // Show all sitters if no keyword
+      results = sitters; // Show all pets if no keyword
     } else {
       results = sitters
-          .where((user) => user["name"]
-          .toLowerCase()
-          .contains(enteredKeyword.toLowerCase()))
-          .toList(); // Filter by name
+          .where((user) {
+        String userName = user["name"].toLowerCase().trim(); // Trimmed user name
+        String keyword = enteredKeyword.toLowerCase().trim(); // Trimmed entered keyword
+        print('Comparing: "$userName" starts with "$keyword"'); // Debugging the comparison
+        return userName.startsWith(keyword); // Match if the name starts with the entered keyword
+      })
+          .toList(); // Filter by name starting with entered keyword
     }
     setState(() {
       _foundUsers = results;

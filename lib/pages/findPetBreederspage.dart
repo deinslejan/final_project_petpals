@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'hamburger_menu.dart';
+import 'hamburger_menu.dart'; // Ensure to import HamburgerMenu if it's a custom widget
 
 class FindPetBreeders extends StatefulWidget {
   const FindPetBreeders({super.key});
@@ -10,6 +10,8 @@ class FindPetBreeders extends StatefulWidget {
 }
 
 class _FindPetBreedersState extends State<FindPetBreeders> {
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>(); // Add a GlobalKey
+
   final List<Map<String, dynamic>> _sampleUsers = [
     {
       "name": "DIEGO",
@@ -61,17 +63,21 @@ class _FindPetBreedersState extends State<FindPetBreeders> {
     super.initState();
   }
 
-  // Filtering function
   void _runFilter(String enteredKeyword) {
     List<Map<String, dynamic>> results = [];
+    print('Entered Keyword: "$enteredKeyword"'); // Debugging the entered keyword
+
     if (enteredKeyword.isEmpty) {
       results = _sampleUsers; // Show all pets if no keyword
     } else {
       results = _sampleUsers
-          .where((user) => user["name"]
-          .toLowerCase()
-          .contains(enteredKeyword.toLowerCase()))
-          .toList(); // Filter by name
+          .where((user) {
+        String userName = user["name"].toLowerCase().trim(); // Trimmed user name
+        String keyword = enteredKeyword.toLowerCase().trim(); // Trimmed entered keyword
+        print('Comparing: "$userName" starts with "$keyword"'); // Debugging the comparison
+        return userName.startsWith(keyword); // Match if the name starts with the entered keyword
+      })
+          .toList(); // Filter by name starting with entered keyword
     }
     setState(() {
       _foundUsers = results;
@@ -82,25 +88,27 @@ class _FindPetBreedersState extends State<FindPetBreeders> {
   Widget build(BuildContext context) {
     return MaterialApp(
       theme: ThemeData(
-        textTheme: GoogleFonts.jostTextTheme(),
+        textTheme: GoogleFonts.jostTextTheme(), // Apply the Jost font to the text theme
       ),
       home: Scaffold(
+        key: _scaffoldKey, // Assign the scaffold key to this Scaffold
         backgroundColor: Colors.white,
         appBar: AppBar(
           toolbarHeight: 80, // Increase the AppBar height
           backgroundColor: const Color(0xFFFFCA4F),
           title: Container(
-            margin: const EdgeInsets.only(top: 10),
             height: 50,
+            width: 390,
             decoration: BoxDecoration(
               color: Colors.grey[300],
               borderRadius: BorderRadius.circular(25),
             ),
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 15),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween, // Align items
+                mainAxisAlignment: MainAxisAlignment.start,
                 children: [
+                  SizedBox(width: 10),
                   Expanded(
                     child: TextField(
                       onChanged: (value) => _runFilter(value),
@@ -122,7 +130,7 @@ class _FindPetBreedersState extends State<FindPetBreeders> {
             ),
           ),
         ),
-        drawer: HamburgerMenu(), // Add HamburgerMenu as drawer content
+        drawer: HamburgerMenu(), // Use HamburgerMenu as a Drawer
         body: _foundUsers.isNotEmpty
             ? ListView.separated(
           itemBuilder: (context, index) {
@@ -154,7 +162,7 @@ class _FindPetBreedersState extends State<FindPetBreeders> {
           },
           itemCount: _foundUsers.length,
         )
-            : const Center(
+            : Center(
           child: Text(
             'No results found',
             style: TextStyle(fontSize: 18),

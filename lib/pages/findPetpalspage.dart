@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'hamburger_menu.dart';
 
 class FindPetpals extends StatefulWidget {
   const FindPetpals({super.key});
@@ -77,14 +78,19 @@ class _FindPetpalsState extends State<FindPetpals> {
   // Filtering function
   void _runFilter(String enteredKeyword) {
     List<Map<String, dynamic>> results = [];
+    print('Entered Keyword: "$enteredKeyword"'); // Debugging the entered keyword
+
     if (enteredKeyword.isEmpty) {
       results = _sampleUsers; // Show all pets if no keyword
     } else {
       results = _sampleUsers
-          .where((user) => user["name"]
-          .toLowerCase()
-          .contains(enteredKeyword.toLowerCase()))
-          .toList(); // Filter by name
+          .where((user) {
+        String userName = user["name"].toLowerCase().trim(); // Trimmed user name
+        String keyword = enteredKeyword.toLowerCase().trim(); // Trimmed entered keyword
+        print('Comparing: "$userName" starts with "$keyword"'); // Debugging the comparison
+        return userName.startsWith(keyword); // Match if the name starts with the entered keyword
+      })
+          .toList(); // Filter by name starting with entered keyword
     }
     setState(() {
       _foundUsers = results;
@@ -95,48 +101,47 @@ class _FindPetpalsState extends State<FindPetpals> {
   Widget build(BuildContext context) {
     return MaterialApp(
       theme: ThemeData(
-        textTheme: GoogleFonts.jostTextTheme(),
+        textTheme: GoogleFonts.jostTextTheme(), // Apply the Jost font to the text theme
       ),
-      home: Scaffold(
-        backgroundColor: Colors.white,
+      home: Scaffold( // Scaffold is now inside the home property of MaterialApp
         appBar: AppBar(
           toolbarHeight: 80, // Increase the AppBar height
           backgroundColor: const Color(0xFFFFCA4F),
           title: Container(
-            margin: const EdgeInsets.only(top: 10),
             height: 50,
+            width: 390,
             decoration: BoxDecoration(
               color: Colors.grey[300],
               borderRadius: BorderRadius.circular(25),
             ),
-            child: Row(
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.menu, color: Colors.grey),
-                  onPressed: () {
-                    // Placeholder for menu action
-                  },
-                ),
-                Expanded(
-                  child: TextField(
-                    onChanged: (value) => _runFilter(value),
-                    decoration: const InputDecoration(
-                      hintText: 'Search for your Petpals',
-                      border: InputBorder.none,
-                      contentPadding: EdgeInsets.only(left: 10),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 15),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  SizedBox(width: 10),
+                  Expanded(
+                    child: TextField(
+                      onChanged: (value) => _runFilter(value),
+                      decoration: const InputDecoration(
+                        hintText: 'Search for Pet Breeders',
+                        border: InputBorder.none,
+                        contentPadding: EdgeInsets.only(left: 10),
+                      ),
                     ),
                   ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.search, color: Colors.grey),
-                  onPressed: () {
-                    // Placeholder for search button
-                  },
-                ),
-              ],
+                  IconButton(
+                    icon: const Icon(Icons.search, color: Colors.grey),
+                    onPressed: () {
+                      // Placeholder for search button
+                    },
+                  ),
+                ],
+              ),
             ),
           ),
         ),
+        drawer: HamburgerMenu(), // Use HamburgerMenu as a Drawer
         body: _foundUsers.isNotEmpty
             ? ListView.separated(
           itemBuilder: (context, index) {
@@ -155,7 +160,7 @@ class _FindPetpalsState extends State<FindPetpals> {
                 ),
               ),
               subtitle: Text(
-                "${_foundUsers[index]['breed']}\nLocation: ${_foundUsers[index]['location']}",
+                "Location: ${_foundUsers[index]['location']}",
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w400,
@@ -168,7 +173,7 @@ class _FindPetpalsState extends State<FindPetpals> {
           },
           itemCount: _foundUsers.length,
         )
-            : const Center(
+            : Center(
           child: Text(
             'No results found',
             style: TextStyle(fontSize: 18),
