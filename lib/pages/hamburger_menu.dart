@@ -1,4 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:petpals/pages/chatPage.dart';
+import 'package:petpals/pages/findPetBreederspage.dart';
+import 'package:petpals/pages/findPetSitterspage.dart';
+import 'package:petpals/pages/findPetpalspage.dart';
+import 'package:petpals/pages/landingpage.dart';
 
 class HamburgerMenu extends StatelessWidget {
   @override
@@ -28,22 +33,42 @@ class HamburgerMenu extends StatelessWidget {
           ListTile(
             title: Text('MY PALS'),
             leading: Icon(Icons.pets),
-            onTap: () {},
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => ChatPage()),
+              );
+            },
           ),
           ListTile(
             title: Text('FIND PALS'),
             leading: Icon(Icons.search),
-            onTap: () {},
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => FindPetpals()),
+              );
+            },
           ),
           ListTile(
             title: Text('FIND BREEDERS'),
             leading: Icon(Icons.people),
-            onTap: () {},
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => FindPetBreeders()),
+              );
+            },
           ),
           ListTile(
             title: Text('FIND PET-SITTERS'),
             leading: Icon(Icons.home_repair_service),
-            onTap: () {},
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => FindPetSitters()),
+              );
+            },
           ),
           Spacer(),
           ListTile(
@@ -52,7 +77,12 @@ class HamburgerMenu extends StatelessWidget {
               style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
             ),
             leading: Icon(Icons.logout, color: Colors.red),
-            onTap: () {},
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => LandingPage()),
+              );
+            },
           ),
         ],
       ),
