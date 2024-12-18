@@ -13,7 +13,7 @@ class _FindPetSittersState extends State<FindPetSitters> {
   final List<Map<String, dynamic>> sitters = [
     {
       "name": "MIGOY",
-      "location": "San Jose del Monte, Bulacan",
+      "location": "CSJDM, Bulacan",
       "rating": 5,
       "image": "images/petSitters/mingyu.png"
     },
@@ -43,7 +43,7 @@ class _FindPetSittersState extends State<FindPetSitters> {
     },
     {
       "name": "BEA",
-      "location": "San Jose del Monte, Bulacan",
+      "location": "CSJDM, Bulacan",
       "rating": 0,
       "image": "images/petSitters/bea.png"
     },
@@ -65,7 +65,7 @@ class _FindPetSittersState extends State<FindPetSitters> {
 
   @override
   void initState() {
-    _foundUsers = sitters; // Initialize with all sitters
+    _foundUsers = sitters;
     super.initState();
   }
 
@@ -73,14 +73,15 @@ class _FindPetSittersState extends State<FindPetSitters> {
   void _runFilter(String enteredKeyword) {
     List<Map<String, dynamic>> results = [];
     if (enteredKeyword.isEmpty) {
-      results = sitters; // Show all sitters if no keyword
+      results = sitters;
     } else {
       results = sitters
           .where((user) => user["name"]
           .toLowerCase()
           .contains(enteredKeyword.toLowerCase()))
-          .toList(); // Filter by name
+          .toList();
     }
+
     setState(() {
       _foundUsers = results;
     });
@@ -95,7 +96,7 @@ class _FindPetSittersState extends State<FindPetSitters> {
       home: Scaffold(
         backgroundColor: Colors.white,
         appBar: AppBar(
-          toolbarHeight: 80, // Increase the AppBar height
+            toolbarHeight: 80,
           backgroundColor: const Color(0xFFFFCA4F),
           title: Container(
             margin: const EdgeInsets.only(top: 10),
@@ -104,41 +105,46 @@ class _FindPetSittersState extends State<FindPetSitters> {
               color: Colors.grey[300],
               borderRadius: BorderRadius.circular(25),
             ),
-            child: Row(
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.menu, color: Colors.grey),
-                  onPressed: () {
-                    // Placeholder for menu action
-                  },
-                ),
-                Expanded(
-                  child: TextField(
-                    onChanged: (value) => _runFilter(value),
-                    decoration: const InputDecoration(
-                      hintText: 'Search for Pet Sitters',
-                      border: InputBorder.none,
-                      contentPadding: EdgeInsets.only(left: 10),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 10),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.menu, color: Colors.grey),
+                    onPressed: () {
+                      // Placeholder for menu action
+                    },
+                  ),
+                  Expanded(
+                    child: TextField(
+                      onChanged: (value) => _runFilter(value),
+                      decoration: const InputDecoration(
+                        hintText: 'Search for Pet Sitters',
+                        border: InputBorder.none,
+                        contentPadding: EdgeInsets.only(left: 10),
+                      ),
                     ),
                   ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.search, color: Colors.grey),
-                  onPressed: () {
-                    // Placeholder for search button
-                  },
-                ),
-              ],
+                  IconButton(
+                    icon: const Icon(Icons.search, color: Colors.grey),
+                    onPressed: () {
+                      // Placeholder for search button
+                    },
+                  ),
+                ],
+              ),
             ),
           ),
         ),
         body: _foundUsers.isNotEmpty
             ? ListView.separated(
+          itemCount: _foundUsers.length,
           itemBuilder: (context, index) {
             return ListTile(
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               leading: CircleAvatar(
-                backgroundImage:
-                AssetImage(_foundUsers[index]['image']),
+                backgroundImage: AssetImage(_foundUsers[index]['image']),
                 radius: 30,
               ),
               title: Text(
@@ -150,25 +156,24 @@ class _FindPetSittersState extends State<FindPetSitters> {
                 ),
               ),
               subtitle: Text(
-                "Location: ${_foundUsers[index]['location']}",
+                _foundUsers[index]['location'],
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w400,
                 ),
               ),
-              trailing: StarRating(rating: _foundUsers[index]['rating']),
+              trailing: SizedBox(
+                width: 100, // Constrain the width of the star rating
+                child: StarRating(rating: _foundUsers[index]['rating']),
+              ),
             );
           },
           separatorBuilder: (context, index) {
             return const Divider(thickness: 0.5);
           },
-          itemCount: _foundUsers.length,
         )
             : const Center(
-          child: Text(
-            'No results found',
-            style: TextStyle(fontSize: 18),
-          ),
+          child: Text('No results found'),
         ),
       ),
     );
