@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'loginpage.dart'; // Import the LoginPage file
+import 'signup.dart'; // Import the SignUpPage file
 
 void main() {
   runApp(PetPalsApp());
@@ -93,7 +94,11 @@ class PetPalsScreen extends StatelessWidget {
         // Sign Up Button
         ElevatedButton(
           onPressed: () {
-            // TODO: Add navigation or action
+            // Navigate to SignUpPage
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const SignUpPage()),
+            );
           },
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.grey.shade400,

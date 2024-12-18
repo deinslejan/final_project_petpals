@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../components/button.dart';
 import '../components/textfield.dart';
 import 'findPetpalspage.dart';
+import 'introduction.dart'; // Import the Introduction page here
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -166,8 +167,13 @@ class _LoginPageState extends State<LoginPage> {
                 // Sign-up link
                 GestureDetector(
                   onTap: () {
-                    // Add navigation logic for sign-up here
-                    print("Navigate to Sign-Up");
+                    // Navigate to Introduction Page
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => PetPalsApp(),
+                      ),
+                    );
                   },
                   child: const Text(
                     "Don't have an account yet?",
