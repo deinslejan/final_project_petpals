@@ -65,27 +65,23 @@ class _FindPetSittersState extends State<FindPetSitters> {
 
   @override
   void initState() {
-    _foundUsers = sitters; // Initialize with all sitters
+    _foundUsers = sitters;
     super.initState();
   }
 
   // Filtering function
   void _runFilter(String enteredKeyword) {
     List<Map<String, dynamic>> results = [];
-    print('Entered Keyword: "$enteredKeyword"'); // Debugging the entered keyword
-
     if (enteredKeyword.isEmpty) {
-      results = sitters; // Show all pets if no keyword
+      results = sitters;
     } else {
       results = sitters
-          .where((user) {
-        String userName = user["name"].toLowerCase().trim(); // Trimmed user name
-        String keyword = enteredKeyword.toLowerCase().trim(); // Trimmed entered keyword
-        print('Comparing: "$userName" starts with "$keyword"'); // Debugging the comparison
-        return userName.startsWith(keyword); // Match if the name starts with the entered keyword
-      })
-          .toList(); // Filter by name starting with entered keyword
+          .where((user) => user["name"]
+          .toLowerCase()
+          .contains(enteredKeyword.toLowerCase()))
+          .toList();
     }
+
     setState(() {
       _foundUsers = results;
     });
@@ -100,80 +96,83 @@ class _FindPetSittersState extends State<FindPetSitters> {
       home: Scaffold(
         backgroundColor: Colors.white,
         appBar: AppBar(
-          toolbarHeight: 80, // Increase the AppBar height
+          toolbarHeight: 80,
           backgroundColor: const Color(0xFFFFCA4F),
           title: Container(
-            margin: const EdgeInsets.only(top: 10),
             height: 50,
             decoration: BoxDecoration(
               color: Colors.grey[300],
               borderRadius: BorderRadius.circular(25),
             ),
-            child: Row(
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.menu, color: Colors.grey),
-                  onPressed: () {
-                    // Placeholder for menu action
-                  },
-                ),
-                Expanded(
-                  child: TextField(
-                    onChanged: (value) => _runFilter(value),
-                    decoration: const InputDecoration(
-                      hintText: 'Search for Pet Sitters',
-                      border: InputBorder.none,
-                      contentPadding: EdgeInsets.only(left: 10),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 15),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.menu, color: Colors.grey),
+                    onPressed: () {
+                      // Placeholder for menu action
+                    },
+                  ),
+                  Expanded(
+                    child: TextField(
+                      onChanged: (value) => _runFilter(value),
+                      decoration: const InputDecoration(
+                        hintText: 'Search for Pet Sitters',
+                        border: InputBorder.none,
+                        contentPadding: EdgeInsets.only(left: 10),
+                      ),
                     ),
                   ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.search, color: Colors.grey),
-                  onPressed: () {
-                    // Placeholder for search button
-                  },
-                ),
-              ],
+                  IconButton(
+                    icon: const Icon(Icons.search, color: Colors.grey),
+                    onPressed: () {
+                      // Placeholder for search button
+                    },
+                  ),
+                ],
+              ),
             ),
           ),
         ),
         body: _foundUsers.isNotEmpty
             ? ListView.separated(
+          itemCount: _foundUsers.length,
           itemBuilder: (context, index) {
             return ListTile(
-              leading: CircleAvatar(
-                backgroundImage:
-                AssetImage(_foundUsers[index]['image']),
-                radius: 30,
-              ),
-              title: Text(
-                _foundUsers[index]['name'],
-                style: const TextStyle(
-                  fontFamily: 'Bebas Neue',
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              subtitle: Text(
-                "Location: ${_foundUsers[index]['location']}",
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w400,
-                ),
-              ),
-              trailing: StarRating(rating: _foundUsers[index]['rating']),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                leading: CircleAvatar(
+                backgroundImage: AssetImage(_foundUsers[index]['image']),
+            radius: 30,
+            ),
+            title: Text(
+            _foundUsers[index]['name'],
+            style: const TextStyle(
+            fontFamily: 'Bebas Neue',
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            ),
+            ),
+            subtitle: Text(
+            _foundUsers[index]['location'],
+            style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w400,
+            ),
+            ),
+            trailing: SizedBox(
+            width: 100, // Constrain the width of the star rating
+            child: StarRating(rating: _foundUsers[index]['rating']),
+            ),
             );
           },
           separatorBuilder: (context, index) {
             return const Divider(thickness: 0.5);
           },
-          itemCount: _foundUsers.length,
         )
             : const Center(
-          child: Text(
-            'No results found',
-            style: TextStyle(fontSize: 18),
-          ),
+          child: Text('No results found'),
         ),
       ),
     );
