@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'hamburger_menu.dart';
+import 'chats.dart';
 
 class ChatPage extends StatefulWidget {
   const ChatPage({super.key});
@@ -10,7 +11,6 @@ class ChatPage extends StatefulWidget {
 }
 
 class _ChatPageFilter extends State<ChatPage> {
-  // Data for each category
   final List<Map<String, dynamic>> _petPals = [
     {
       "name": "KKUMA",
@@ -246,7 +246,7 @@ class _ChatPageFilter extends State<ChatPage> {
                       onChanged: (value) =>
                           _runFilter(value), // Search function
                       decoration: const InputDecoration(
-                        hintText: 'Search for Pet Breeders',
+                        hintText: 'Search for my pals',
                         border: InputBorder.none,
                         contentPadding: EdgeInsets.only(left: 10),
                       ),
@@ -287,23 +287,33 @@ class _ChatPageFilter extends State<ChatPage> {
               child: _foundUsers.isNotEmpty
                   ? ListView.separated(
                       itemBuilder: (context, index) {
-                        return ListTile(
-                          leading: CircleAvatar(
-                            backgroundImage:
-                                AssetImage(_foundUsers[index]['image']),
-                            radius: 30,
-                          ),
-                          title: Text(
-                            _foundUsers[index]['name'],
-                            style: const TextStyle(
-                              fontFamily: 'Bebas Neue',
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
+                        return InkWell(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => ChatScreen(),
+                              ),
+                            );
+                          },
+                          child: ListTile(
+                            leading: CircleAvatar(
+                              backgroundImage:
+                                  AssetImage(_foundUsers[index]['image']),
+                              radius: 30,
                             ),
-                          ),
-                          subtitle: Text(
-                            "Location: ${_foundUsers[index]['location']}",
-                            style: const TextStyle(fontSize: 16),
+                            title: Text(
+                              _foundUsers[index]['name'],
+                              style: const TextStyle(
+                                fontFamily: 'Bebas Neue',
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            subtitle: Text(
+                              "Location: ${_foundUsers[index]['location']}",
+                              style: const TextStyle(fontSize: 16),
+                            ),
                           ),
                         );
                       },
