@@ -11,6 +11,8 @@ class YourAccountPage extends StatelessWidget {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
+  YourAccountPage({super.key});
+
   @override
   Widget build(BuildContext context) {
     // Get the current user from FirebaseAuth
@@ -27,7 +29,7 @@ class YourAccountPage extends StatelessWidget {
           ),
           centerTitle: true,
         ),
-        body: Center(child: Text('No user is logged in')),
+        body: const Center(child: Text('No user is logged in')),
       );
     }
 
@@ -41,9 +43,9 @@ class YourAccountPage extends StatelessWidget {
     double userRating = userProfile['rating'] ?? 0.0;
 
     return Scaffold(
-      backgroundColor: Color(0xFFFFF9E5),
+      backgroundColor: const Color(0xFFFFF9E5),
       appBar: AppBar(
-        backgroundColor: Colors.amber,
+        backgroundColor: const Color(0xFFFFCA4F),
         title: Text(
           'YOUR ACCOUNT',
           style: GoogleFonts.jost(fontWeight: FontWeight.bold),
@@ -51,18 +53,18 @@ class YourAccountPage extends StatelessWidget {
         centerTitle: true,
         leading: Builder(
           builder: (context) => IconButton(
-            icon: Icon(Icons.menu, color: Colors.black),
+            icon: const Icon(Icons.menu, color: Colors.black),
             onPressed: () => Scaffold.of(context).openDrawer(),
           ),
         ),
       ),
       drawer: HamburgerMenu(),
       body: SingleChildScrollView(
-        padding: EdgeInsets.symmetric(horizontal: 16.0),
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            SizedBox(height: 24),
+            const SizedBox(height: 24),
             // Profile picture and rating section
             Stack(
               children: [
@@ -70,7 +72,7 @@ class YourAccountPage extends StatelessWidget {
                   radius: 60,
                   backgroundImage: AssetImage(profileImagePath), // Use the profile image fetched from userProfiles.dart
                 ),
-                Positioned(
+                const Positioned(
                   bottom: 0,
                   right: 0,
                   child: CircleAvatar(
@@ -81,7 +83,7 @@ class YourAccountPage extends StatelessWidget {
                 ),
               ],
             ),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             // Rating display
             Text(
               'Rating: ${userRating.toStringAsFixed(1)} ★',
@@ -91,7 +93,7 @@ class YourAccountPage extends StatelessWidget {
                 color: Colors.amber,
               ),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             // Fetch User Details from Firebase
             StreamBuilder<DocumentSnapshot>(
               stream: _firestore
@@ -100,7 +102,7 @@ class YourAccountPage extends StatelessWidget {
                   .snapshots(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return CircularProgressIndicator();
+                  return const CircularProgressIndicator();
                 }
                 if (!snapshot.hasData || !snapshot.data!.exists) {
                   return Text(
@@ -141,7 +143,7 @@ class YourAccountPage extends StatelessWidget {
                         ),
                       ),
                     ),
-                    SizedBox(height: 8),
+                    const SizedBox(height: 8),
                     Align(
                       alignment: Alignment.centerLeft,
                       child: Column(
@@ -174,7 +176,7 @@ class YourAccountPage extends StatelessWidget {
                 );
               },
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             Divider(height: 30, thickness: 1, color: Colors.grey.shade400),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -194,7 +196,7 @@ class YourAccountPage extends StatelessWidget {
                     );
                   },
                   style: TextButton.styleFrom(
-                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     backgroundColor: Colors.purple.shade50,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(20),
@@ -210,7 +212,7 @@ class YourAccountPage extends StatelessWidget {
                 ),
               ],
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             // Fetch Pets from Firebase
             StreamBuilder<QuerySnapshot>(
               stream: currentUser != null
@@ -219,10 +221,10 @@ class YourAccountPage extends StatelessWidget {
                   .doc(currentUser.uid)
                   .collection('pets')
                   .snapshots()
-                  : Stream.empty(), // Ensure a valid empty stream if user is null
+                  : const Stream.empty(), // Ensure a valid empty stream if user is null
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return CircularProgressIndicator();
+                  return const CircularProgressIndicator();
                 }
                 if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
                   return Text(
@@ -244,7 +246,7 @@ class YourAccountPage extends StatelessWidget {
                 );
               },
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             ElevatedButton(
               onPressed: () {
                 Navigator.push(
@@ -254,7 +256,7 @@ class YourAccountPage extends StatelessWidget {
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.black,
-                minimumSize: Size(double.infinity, 50),
+                minimumSize: const Size(double.infinity, 50),
               ),
               child: Text(
                 'EDIT PROFILE',
@@ -276,7 +278,7 @@ class PetCard extends StatelessWidget {
   final String type;
   final String gender;
 
-  PetCard({
+  const PetCard({super.key,
     required this.name,
     required this.type,
     required this.gender,
@@ -285,10 +287,10 @@ class PetCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
       elevation: 4,
       child: ListTile(
-        contentPadding: EdgeInsets.all(16),
+        contentPadding: const EdgeInsets.all(16),
         title: Text(name, style: GoogleFonts.jost(fontWeight: FontWeight.bold)),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

@@ -33,6 +33,10 @@ class _SignUpPageState extends State<SignUpPage> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;  // Firebase Authentication instance
 
+  // State to handle obscure text for password visibility
+  bool _isPasswordVisible = false;
+  bool _isConfirmPasswordVisible = false;
+
   // Sign Up function to store data in Firestore and Firebase Authentication
   void signUp() async {
     if (_formKey.currentState!.validate()) {
@@ -158,21 +162,16 @@ class _SignUpPageState extends State<SignUpPage> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        automaticallyImplyLeading: false,
+        automaticallyImplyLeading: false, // Remove the back button
         backgroundColor: const Color(0xFFFFCA4F),
-        title: Align(
-          alignment: Alignment.centerLeft,
-          child: Text(
-            "SIGN UP",
-            style: const TextStyle(
-              fontFamily: 'BebasNeue',
-              fontSize: 32,
-              fontWeight: FontWeight.w400,
-              color: Colors.black,
-              letterSpacing: 2.0,
-            ),
+        title: Text(
+          "SIGN UP",
+          style: TextStyle(
+            fontSize: 25,
+            fontWeight: FontWeight.w900,
           ),
         ),
+        centerTitle: true,
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -228,8 +227,20 @@ class _SignUpPageState extends State<SignUpPage> {
                 const SizedBox(height: 10),
                 TextFormField(
                   controller: passwordController,
-                  obscureText: true,
-                  decoration: inputDecoration("Password", "******"),
+                  obscureText: !_isPasswordVisible,
+                  decoration: inputDecoration("Password", "******").copyWith(
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                        color: Colors.black,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _isPasswordVisible = !_isPasswordVisible;
+                        });
+                      },
+                    ),
+                  ),
                   validator: (value) => value == null || value.length < 6
                       ? 'Password must be at least 6 characters'
                       : null,
@@ -237,8 +248,20 @@ class _SignUpPageState extends State<SignUpPage> {
                 const SizedBox(height: 10),
                 TextFormField(
                   controller: confirmPasswordController,
-                  obscureText: true,
-                  decoration: inputDecoration("Confirm Password", "******"),
+                  obscureText: !_isConfirmPasswordVisible,
+                  decoration: inputDecoration("Confirm Password", "******").copyWith(
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _isConfirmPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                        color: Colors.black,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _isConfirmPasswordVisible = !_isConfirmPasswordVisible;
+                        });
+                      },
+                    ),
+                  ),
                   validator: (value) =>
                   value != passwordController.text ? 'Passwords do not match' : null,
                 ),

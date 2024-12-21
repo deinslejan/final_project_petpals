@@ -3,13 +3,29 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-class AddPetPage extends StatefulWidget {
+class EditPetPage extends StatefulWidget {
+  final String petId;
+  final String initialName;
+  final String initialBreed;
+  final String initialType;
+  final String initialGender;
+  final String initialDescription;
+
+  EditPetPage({
+    required this.petId,
+    required this.initialName,
+    required this.initialBreed,
+    required this.initialType,
+    required this.initialGender,
+    required this.initialDescription,
+  });
+
   @override
-  _AddPetPageState createState() => _AddPetPageState();
+  _EditPetPageState createState() => _EditPetPageState();
 }
 
-class _AddPetPageState extends State<AddPetPage> {
-  String? selectedType = 'Dog'; // Default selected type
+class _EditPetPageState extends State<EditPetPage> {
+  String? selectedType;
   final TextEditingController petNameController = TextEditingController();
   final TextEditingController breedController = TextEditingController();
   final TextEditingController otherTypeController = TextEditingController();
@@ -20,99 +36,55 @@ class _AddPetPageState extends State<AddPetPage> {
 
   // Gender selection
   String? selectedGender;
-  String? userLocation; // Variable to store user's location
-  String? username; // Variable to store the current user's username
 
-  // Function to get the current user's location and username
-  Future<void> _getUserDetails() async {
-    User? user = _auth.currentUser;
-    if (user == null) {
-      // If no user is logged in, show an error
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('You need to be logged in to add a pet.')),
-      );
-      return;
-    }
-
-    // Get the current user's details from Firestore
-    try {
-      DocumentSnapshot userDoc = await _firestore.collection('users').doc(user.uid).get();
-      if (userDoc.exists) {
-        setState(() {
-          userLocation = userDoc['location']; // Assuming 'location' field exists in user document
-          username = userDoc['username']; // Assuming 'username' field exists in user document
-        });
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error retrieving user details: $e')),
-      );
-    }
+  @override
+  void initState() {
+    super.initState();
+    // Initialize form fields with the pet's current details
+    selectedType = widget.initialType;
+    petNameController.text = widget.initialName;
+    breedController.text = widget.initialBreed;
+    selectedGender = widget.initialGender;
+    descriptionController.text = widget.initialDescription;
   }
 
-  // Function to add a pet to the current user's document
-  Future<void> _addPetToUser() async {
-    // Get the current user
+  // Function to update the pet details in Firestore
+  Future<void> _updatePetDetails() async {
     User? user = _auth.currentUser;
     if (user == null) {
-      // If no user is logged in, show an error
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('You need to be logged in to add a pet.')),
+        const SnackBar(content: Text('You need to be logged in to edit a pet.')),
       );
       return;
     }
 
-    if (userLocation == null || username == null) {
-      // If location or username is not available, show an error
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Unable to retrieve user details.')),
-      );
-      return;
-    }
-
-    // Create a new pet document
-    Map<String, dynamic> petData = {
+    // Create a map of updated pet data
+    Map<String, dynamic> updatedPetData = {
       'name': petNameController.text,
       'breed': breedController.text,
       'type': selectedType == 'Other' ? otherTypeController.text : selectedType,
       'gender': selectedGender,
       'description': descriptionController.text,
-      'location': userLocation, // Add the user's location here
-      'ownerID': username, // Add the current user's username as the ownerID
-      'createdAt': Timestamp.now(), // Timestamp for when the pet was added
+      'updatedAt': Timestamp.now(), // Timestamp for when the pet was updated
     };
 
-    // Save the pet in the Firestore under the user's document
     try {
-      await _firestore.collection('users').doc(user.uid).collection('pets').add(petData);
+      // Update the pet document in Firestore
+      await _firestore
+          .collection('users')
+          .doc(user.uid)
+          .collection('pets')
+          .doc(widget.petId)
+          .update(updatedPetData);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Pet added successfully!')),
+        const SnackBar(content: Text('Pet updated successfully!')),
       );
-      // Optionally, clear the form after submission
-      _clearForm();
+      Navigator.pop(context); // Go back to the previous page after saving
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error adding pet: $e')),
+        SnackBar(content: Text('Error updating pet: $e')),
       );
     }
-  }
-
-  // Function to clear the form after submission
-  void _clearForm() {
-    petNameController.clear();
-    breedController.clear();
-    otherTypeController.clear();
-    descriptionController.clear();
-    setState(() {
-      selectedType = 'Dog';
-      selectedGender = null;
-    });
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _getUserDetails(); // Get the user's details when the page is initialized
   }
 
   @override
@@ -122,7 +94,7 @@ class _AddPetPageState extends State<AddPetPage> {
       appBar: AppBar(
         backgroundColor: const Color(0xFFFFCA4F),
         title: Text(
-          'ADD NEW PET',
+          'EDIT PET DETAILS',
           style: GoogleFonts.jost(fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
@@ -139,22 +111,9 @@ class _AddPetPageState extends State<AddPetPage> {
                     radius: 50,
                     backgroundColor: Colors.purple.shade100,
                     child: const Icon(
-                      Icons.person,
+                      Icons.pets,
                       size: 50,
                       color: Colors.purple,
-                    ),
-                  ),
-                  const Positioned(
-                    bottom: 0,
-                    right: 0,
-                    child: CircleAvatar(
-                      radius: 15,
-                      backgroundColor: Colors.white,
-                      child: Icon(
-                        Icons.add,
-                        size: 20,
-                        color: Colors.black,
-                      ),
                     ),
                   ),
                 ],
@@ -303,7 +262,9 @@ class _AddPetPageState extends State<AddPetPage> {
               ),
               onPressed: () {
                 // Handle form submission
-                if (petNameController.text.isEmpty || breedController.text.isEmpty || selectedGender == null) {
+                if (petNameController.text.isEmpty ||
+                    breedController.text.isEmpty ||
+                    selectedGender == null) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Please fill in all required fields.')),
                   );
@@ -312,11 +273,11 @@ class _AddPetPageState extends State<AddPetPage> {
                     const SnackBar(content: Text('Please specify the pet type.')),
                   );
                 } else {
-                  _addPetToUser();
+                  _updatePetDetails();
                 }
               },
               child: Text(
-                'ADD PET',
+                'UPDATE PET',
                 style: GoogleFonts.bebasNeue(color: Colors.white, fontSize: 20),
               ),
             ),

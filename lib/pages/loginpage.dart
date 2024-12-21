@@ -65,21 +65,17 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(80.0),
-        child: AppBar(
-          backgroundColor: const Color(0xFFFFCA4F),
-          title: const Padding(
-            padding: EdgeInsets.only(left: 5, top: 30),
-            child: Text(
-              "LOG IN",
-              style: TextStyle(
-                fontSize: 25,
-                fontWeight: FontWeight.w900,
-              ),
-            ),
+      appBar: AppBar(
+        automaticallyImplyLeading: false, // Remove the back button
+        backgroundColor: const Color(0xFFFFCA4F),
+        title: Text(
+          "LOG IN",
+          style: TextStyle(
+            fontSize: 25,
+            fontWeight: FontWeight.w900,
           ),
         ),
+        centerTitle: true,
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -141,7 +137,8 @@ class _LoginPageState extends State<LoginPage> {
                     MyTextField(
                       controller: passwordController,
                       hintText: 'Enter Password',
-                      obscureText: !_isPasswordVisible, // Toggle password visibility
+                      obscureText:
+                          !_isPasswordVisible, // Toggle password visibility
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'Please enter your password';

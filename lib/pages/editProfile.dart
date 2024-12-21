@@ -3,7 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'addPetPage.dart';
-import 'yourAccount.dart'; // Import the AddPetPage
+import 'editPetPage.dart'; // Import EditPetPage
 
 class EditProfilePage extends StatefulWidget {
   @override
@@ -280,6 +280,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                       name: petData['name'] ?? 'Unknown',
                       type: petData['type'] ?? 'Unknown',
                       gender: petData['gender'] ?? 'Unknown',
+                      petId: pet.id, // Pass petId here
                     );
                   }).toList(),
                 );
@@ -310,11 +311,13 @@ class PetCard extends StatelessWidget {
   final String name;
   final String type;
   final String gender;
+  final String petId; // Add petId to identify the pet
 
   PetCard({
     required this.name,
     required this.type,
     required this.gender,
+    required this.petId,
   });
 
   @override
@@ -331,6 +334,54 @@ class PetCard extends StatelessWidget {
             Text('Type: $type'),
             Text('Gender: $gender'),
           ],
+        ),
+        trailing: IconButton(
+          icon: Icon(Icons.edit),
+          onPressed: () async {
+            // Fetch the pet details from Firestore using the petId
+            try {
+              var petDoc = await FirebaseFirestore.instance
+                  .collection('users')
+                  .doc(FirebaseAuth.instance.currentUser?.uid)
+                  .collection('pets')
+                  .doc(petId)
+                  .get();
+
+              if (petDoc.exists) {
+                // Fetch data from Firestore document
+                var petData = petDoc.data()!;
+                String initialName = petData['name'] ?? '';
+                String initialBreed = petData['breed'] ?? '';
+                String initialType = petData['type'] ?? '';
+                String initialGender = petData['gender'] ?? '';
+                String initialDescription = petData['description'] ?? '';
+
+                // Navigate to EditPetPage with all necessary parameters
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        EditPetPage(
+                          petId: petId,
+                          initialName: initialName,
+                          initialBreed: initialBreed,
+                          initialType: initialType,
+                          initialGender: initialGender,
+                          initialDescription: initialDescription,
+                        ),
+                  ),
+                );
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Pet not found!')),
+                );
+              }
+            } catch (e) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Error fetching pet data: $e')),
+              );
+            }
+          },
         ),
       ),
     );

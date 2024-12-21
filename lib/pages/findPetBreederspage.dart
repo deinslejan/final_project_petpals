@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'hamburger_menu.dart'; // Ensure to import HamburgerMenu if it's a custom widget
+import 'breederProfilepage.dart';
+import 'hamburger_menu.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'userPictures.dart';
+import 'breederProfilepage.dart';
 
 class FindPetBreeders extends StatefulWidget {
   const FindPetBreeders({super.key});
@@ -10,91 +15,88 @@ class FindPetBreeders extends StatefulWidget {
 }
 
 class _FindPetBreedersState extends State<FindPetBreeders> {
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>(); // Add a GlobalKey
-
-  final List<Map<String, dynamic>> _sampleUsers = [
-    {
-      "name": "DIEGO",
-      "location": "Makati City",
-      "image": "images/petBreeders/diego.png"
-    },
-    {
-      "name": "MJ",
-      "location": "BGC, Taguig",
-      "image": "images/petBreeders/mj.png"
-    },
-    {
-      "name": "MARK",
-      "location": "Baguio City",
-      "image": "images/petBreeders/mark.png"
-    },
-    {
-      "name": "SAMUEL",
-      "location": "Jaro, Iloilo",
-      "image": "images/petBreeders/samuel.png"
-    },
-    {
-      "name": "BEYONCE",
-      "location": "España, Manila",
-      "image": "images/petBreeders/beyonce.png"
-    },
-    {
-      "name": "JAMES",
-      "location": "Poblacion, Makati",
-      "image": "images/alvin.png"
-    },
-    {
-      "name": "GISELLE",
-      "location": "Taft Ave, Manila",
-      "image": "images/petBreeders/giselle.png"
-    },
-    {
-      "name": "CHARLIE",
-      "location": "España, Manila",
-      "image": "images/petBreeders/charlie.png"
-    },
-  ];
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   List<Map<String, dynamic>> _foundUsers = [];
+  User? _currentUser;
 
   @override
   void initState() {
-    _foundUsers = _sampleUsers;
     super.initState();
+    _currentUser = _auth.currentUser;
+    _fetchPetBreeders();
   }
 
-  void _runFilter(String enteredKeyword) {
+  // Fetch users from Firestore and filter for pet breeders
+  Future<void> _fetchPetBreeders() async {
+    QuerySnapshot snapshot = await _firestore.collection('users').get();
     List<Map<String, dynamic>> results = [];
-    print('Entered Keyword: "$enteredKeyword"'); // Debugging the entered keyword
 
-    if (enteredKeyword.isEmpty) {
-      results = _sampleUsers; // Show all pets if no keyword
-    } else {
-      results = _sampleUsers
-          .where((user) {
-        String userName = user["name"].toLowerCase().trim(); // Trimmed user name
-        String keyword = enteredKeyword.toLowerCase().trim(); // Trimmed entered keyword
-        print('Comparing: "$userName" starts with "$keyword"'); // Debugging the comparison
-        return userName.startsWith(keyword); // Match if the name starts with the entered keyword
-      })
-          .toList(); // Filter by name starting with entered keyword
+    // Get current user's email to avoid showing them in the list
+    String currentUserEmail = _currentUser?.email ?? '';
+    print("Current user email: $currentUserEmail");
+
+    for (var doc in snapshot.docs) {
+      var data = doc.data() as Map<String, dynamic>;
+
+      // Skip the current user
+      if (data['email'] == currentUserEmail) continue;
+
+      bool isPetBreeder = data['isPetBreeder'] ?? false;
+
+      if (isPetBreeder) {
+        // Get user details
+        String userName = (data['firstName'] ?? '') + ' ' + (data['lastName'] ?? '') ?? 'Unknown Name';
+
+        // Get image and rating from the userProfilePictures map
+        String userEmail = data['email'];
+        String userImage = userProfilePictures[userEmail]?['image'] ?? 'images/default.png';
+        double userRating = userProfilePictures[userEmail]?['rating'] ?? 0.0;
+
+        results.add({
+          "name": userName.trim().isEmpty ? 'Unknown Name' : userName.trim(),
+          "location": data['location'] ?? "Unknown Location",
+          "image": userImage,
+          "rating": userRating,
+        });
+      }
     }
+
     setState(() {
       _foundUsers = results;
     });
+  }
+
+  // Run filter based on search input
+  void _runFilter(String query) {
+    List<Map<String, dynamic>> results = [];
+
+    if (query.isEmpty) {
+      _fetchPetBreeders();
+    } else {
+      results = _foundUsers.where((user) {
+        String userName = user["name"]?.toLowerCase().trim() ?? "";
+        String keyword = query.toLowerCase().trim();
+        return userName.startsWith(keyword);
+      }).toList();
+
+      setState(() {
+        _foundUsers = results;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       theme: ThemeData(
-        textTheme: GoogleFonts.jostTextTheme(), // Apply the Jost font to the text theme
+        textTheme: GoogleFonts.jostTextTheme(),
       ),
       home: Scaffold(
-        key: _scaffoldKey, // Assign the scaffold key to this Scaffold
         backgroundColor: Colors.white,
         appBar: AppBar(
-          toolbarHeight: 80, // Increase the AppBar height
+          toolbarHeight: 80,
           backgroundColor: const Color(0xFFFFCA4F),
           title: Container(
             height: 50,
@@ -108,7 +110,7 @@ class _FindPetBreedersState extends State<FindPetBreeders> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  SizedBox(width: 10),
+                  const SizedBox(width: 10),
                   Expanded(
                     child: TextField(
                       onChanged: (value) => _runFilter(value),
@@ -121,32 +123,48 @@ class _FindPetBreedersState extends State<FindPetBreeders> {
                   ),
                   IconButton(
                     icon: const Icon(Icons.search, color: Colors.grey),
-                    onPressed: () {
-                      // Placeholder for search button
-                    },
+                    onPressed: () {},
                   ),
                 ],
               ),
             ),
           ),
         ),
-        drawer: HamburgerMenu(), // Use HamburgerMenu as a Drawer
+        drawer: HamburgerMenu(),
         body: _foundUsers.isNotEmpty
             ? ListView.separated(
           itemBuilder: (context, index) {
             return ListTile(
               leading: CircleAvatar(
-                backgroundImage:
-                AssetImage(_foundUsers[index]['image']),
+                backgroundImage: AssetImage(_foundUsers[index]['image']),
                 radius: 30,
               ),
-              title: Text(
-                _foundUsers[index]['name'],
-                style: const TextStyle(
-                  fontFamily: 'Bebas Neue',
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
+              title: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      _foundUsers[index]['name'],
+                      style: const TextStyle(
+                        fontFamily: 'Bebas Neue',
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  Text(
+                    _foundUsers[index]['rating'].toStringAsFixed(1),
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.amber,
+                    ),
+                  ),
+                  Icon(
+                    Icons.star,
+                    color: Colors.amber,
+                    size: 18,
+                  ),
+                ],
               ),
               subtitle: Text(
                 "Location: ${_foundUsers[index]['location']}",
@@ -155,6 +173,15 @@ class _FindPetBreedersState extends State<FindPetBreeders> {
                   fontWeight: FontWeight.w400,
                 ),
               ),
+              onTap: () {
+                // Navigate to the PetBreederProfile page
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => PetBreederProfile(),
+                  ),
+                );
+              },
             );
           },
           separatorBuilder: (context, index) {
@@ -162,7 +189,7 @@ class _FindPetBreedersState extends State<FindPetBreeders> {
           },
           itemCount: _foundUsers.length,
         )
-            : Center(
+            : const Center(
           child: Text(
             'No results found',
             style: TextStyle(fontSize: 18),

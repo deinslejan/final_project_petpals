@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:petpals/components/stars.dart';
-import 'package:petpals/pages/hamburger_menu.dart'; // Import your HamburgerMenu.
+import 'hamburger_menu.dart';  // Import your HamburgerMenu widget
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'sitterProfilepage.dart';
+import 'userPictures.dart';  // Import the user profile pictures map
 
 class FindPetSitters extends StatefulWidget {
   const FindPetSitters({super.key});
@@ -11,98 +14,85 @@ class FindPetSitters extends StatefulWidget {
 }
 
 class _FindPetSittersState extends State<FindPetSitters> {
-  final List<Map<String, dynamic>> sitters = [
-    {
-      "name": "MIGOY",
-      "location": "CSJDM, Bulacan",
-      "rating": 5,
-      "image": "images/petSitters/mingyu.png"
-    },
-    {
-      "name": "BASTI",
-      "location": "España, Manila",
-      "rating": 4,
-      "image": "images/petSitters/jeno.png"
-    },
-    {
-      "name": "LEJAN",
-      "location": "Novaliches, Quezon City",
-      "rating": 3,
-      "image": "images/petSitters/lejan.png"
-    },
-    {
-      "name": "JAMIE",
-      "location": "Makati City",
-      "rating": 2,
-      "image": "images/petSitters/jamie.png"
-    },
-    {
-      "name": "JELO",
-      "location": "España, Manila",
-      "rating": 1,
-      "image": "images/petSitters/jeonghan.png"
-    },
-    {
-      "name": "BEA",
-      "location": "CSJDM, Bulacan",
-      "rating": 0,
-      "image": "images/petSitters/bea.png"
-    },
-    {
-      "name": "HANBIN",
-      "location": "Valenzuela",
-      "rating": 0,
-      "image": "images/petSitters/haobin1.png"
-    },
-    {
-      "name": "HAO",
-      "location": "Valenzuela",
-      "rating": 0,
-      "image": "images/petSitters/haobin2.png"
-    },
-  ];
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  // Filtered users list.
   List<Map<String, dynamic>> _foundUsers = [];
+  User? _currentUser;
 
   @override
   void initState() {
     super.initState();
-    _foundUsers = sitters; // Initially display all sitters.
+    _currentUser = _auth.currentUser;
+    _fetchPetSitters();  // Fetch pet sitters when the page is loaded
   }
 
-  // Filtering function
-  void _runFilter(String enteredKeyword) {
+  // Fetch users from Firestore and filter for pet sitters
+  Future<void> _fetchPetSitters() async {
+    QuerySnapshot snapshot = await _firestore.collection('users').get();
     List<Map<String, dynamic>> results = [];
-    print('Entered Keyword: "$enteredKeyword"'); // Debugging the entered keyword
 
-    if (enteredKeyword.isEmpty) {
-      results = sitters; // Show all pets if no keyword
-    } else {
-      results = sitters
-          .where((user) {
-        String userName = user["name"].toLowerCase().trim(); // Trimmed user name
-        String keyword = enteredKeyword.toLowerCase().trim(); // Trimmed entered keyword
-        print('Comparing: "$userName" starts with "$keyword"'); // Debugging the comparison
-        return userName.startsWith(keyword); // Match if the name starts with the entered keyword
-      })
-          .toList(); // Filter by name starting with entered keyword
+    // Get current user's email to avoid showing them in the list
+    String currentUserEmail = _currentUser?.email ?? '';
+    print("Current user email: $currentUserEmail");
+
+    for (var doc in snapshot.docs) {
+      var data = doc.data() as Map<String, dynamic>;
+
+      // Skip the current user
+      if (data['email'] == currentUserEmail) continue;
+
+      bool isPetSitter = data['isPetSitter'] ?? false;
+
+      if (isPetSitter) {
+        // Get user details
+        String userName = (data['firstName'] ?? '') + ' ' + (data['lastName'] ?? '') ?? 'Unknown Name';
+
+        // Get image and rating from the userProfilePictures map
+        String userEmail = data['email'];
+        String userImage = userProfilePictures[userEmail]?['image'] ?? 'images/default.png';
+        double userRating = userProfilePictures[userEmail]?['rating'] ?? 0.0;
+
+        results.add({
+          "name": userName.trim().isEmpty ? 'Unknown Name' : userName.trim(),
+          "location": data['location'] ?? "Unknown Location",
+          "image": userImage,
+          "rating": userRating,
+        });
+      }
     }
+
     setState(() {
       _foundUsers = results;
     });
   }
 
+  // Run filter based on search input (optional, but left in case you'd like to use it)
+  void _runFilter(String query) {
+    List<Map<String, dynamic>> results = [];
+
+    if (query.isEmpty) {
+      _fetchPetSitters();  // Reload the full list
+    } else {
+      results = _foundUsers.where((user) {
+        String userName = user["name"]?.toLowerCase().trim() ?? "";
+        String keyword = query.toLowerCase().trim();
+        return userName.startsWith(keyword);
+      }).toList();
+
+      setState(() {
+        _foundUsers = results;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      theme: ThemeData(
-        textTheme: GoogleFonts.jostTextTheme(), // Use Google Fonts for consistent styling.
-      ),
+      theme: ThemeData(textTheme: GoogleFonts.jostTextTheme()),
       home: Scaffold(
-        backgroundColor: Colors.white,
         appBar: AppBar(
-            toolbarHeight: 80,
+          toolbarHeight: 80,
           backgroundColor: const Color(0xFFFFCA4F),
           title: Container(
             height: 50,
@@ -114,65 +104,100 @@ class _FindPetSittersState extends State<FindPetSitters> {
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 15),
               child: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
                 children: [
+                  const SizedBox(width: 10),
                   Expanded(
                     child: TextField(
-                      onChanged: _runFilter,
+                      onChanged: (value) => _runFilter(value),
                       decoration: const InputDecoration(
                         hintText: 'Search for Pet Sitters',
                         border: InputBorder.none,
+                        contentPadding: EdgeInsets.only(left: 10),
                       ),
                     ),
                   ),
-                  Icon(Icons.search, color: Colors.grey[600]),
+                  IconButton(
+                    icon: const Icon(Icons.search, color: Colors.grey),
+                    onPressed: () {},
+                  ),
                 ],
               ),
             ),
           ),
+          centerTitle: true,
         ),
-        drawer: HamburgerMenu(), // Replace with the HamburgerMenu widget.
-        body: _foundUsers.isNotEmpty
-            ? ListView.separated(
-          itemCount: _foundUsers.length,
-          itemBuilder: (context, index) {
-            final user = _foundUsers[index];
-            return ListTile(
-              contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 16, vertical: 8),
-              leading: CircleAvatar(
-                backgroundImage: AssetImage(user['image']),
-                radius: 30,
-              ),
-              title: Text(
-                user['name'],
-                style: const TextStyle(
-                  fontFamily: 'Bebas Neue',
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
+        drawer: HamburgerMenu(),  // Sidebar menu
+        body: Column(
+          children: [
+            const Divider(thickness: 1),  // Divider after the search bar
+
+            // Display Users List
+            Expanded(
+              child: _foundUsers.isNotEmpty
+                  ? ListView.separated(
+                itemCount: _foundUsers.length,
+                itemBuilder: (context, index) {
+                  return ListTile(
+                    leading: CircleAvatar(
+                      backgroundImage: AssetImage(_foundUsers[index]['image']),
+                      radius: 30,
+                    ),
+                    title: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            _foundUsers[index]['name'],
+                            style: const TextStyle(
+                              fontFamily: 'Bebas Neue',
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        // Display the rating
+                        Text(
+                          _foundUsers[index]['rating'].toStringAsFixed(1),
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.amber,
+                          ),
+                        ),
+                        const Icon(
+                          Icons.star,
+                          color: Colors.amber,
+                          size: 18,
+                        ),
+                      ],
+                    ),
+                    subtitle: Text(
+                      "Location: ${_foundUsers[index]['location']}",
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                    onTap: () {
+                      // Navigate to PetSitterProfile and pass user data excluding email
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => PetSitterProfile(
+                            // No email is passed here
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                },
+                separatorBuilder: (context, index) => const Divider(thickness: 0.5),
+              )
+                  : const Center(
+                child: Text(
+                  'No results found',
+                  style: TextStyle(fontSize: 18),
                 ),
               ),
-              subtitle: Text(
-                user['location'],
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w400,
-                ),
-              ),
-              trailing: SizedBox(
-                width: 100, // Constrain the width of the star rating.
-                child: StarRating(rating: user['rating']),
-              ),
-            );
-          },
-          separatorBuilder: (context, index) => const Divider(
-            thickness: 0.5,
-          ),
-        )
-            : const Center(
-          child: Text(
-            'No results found',
-            style: TextStyle(fontSize: 18),
-          ),
+            ),
+          ],
         ),
       ),
     );

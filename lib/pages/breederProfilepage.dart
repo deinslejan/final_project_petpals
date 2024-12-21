@@ -9,31 +9,25 @@ class PetBreederProfile extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: const Color(0xFFFFF9E5),
         appBar: AppBar(
           backgroundColor: const Color(0xFFFFCA4F),
-          title: Row(
-            mainAxisAlignment: MainAxisAlignment.end, // Aligns text to the right
-            children: [
-              Text(
-                'PET BREEDER',
-                style: TextStyle(
-                  fontFamily: 'BebasNeue',
-                  fontSize: 24,
-                  fontWeight: FontWeight.w700,
-                  shadows: [
-                    Shadow(
-                      offset: Offset(1, 1),
-                      blurRadius: 1,
-                      color: Colors.black.withOpacity(0.2),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+          leading: IconButton(
+            icon: Icon(Icons.arrow_back, color: Colors.black),
+            onPressed: () {
+              Navigator.pop(context);
+            },
           ),
+          title: Text(
+            'PET-BREEDER',
+            style: GoogleFonts.jost(
+              fontWeight: FontWeight.bold,
+              fontSize: 20,  // Adjusted for clarity
+              color: Colors.black,  // Adjust text color for contrast
+            ),
+          ),
+          centerTitle: true,
         ),
-
         body: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

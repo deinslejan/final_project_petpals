@@ -1,8 +1,10 @@
+// hamburgerMenu.dart
 import 'package:flutter/material.dart';
 import 'package:petpals/pages/yourAccount.dart';
 import 'chatPage.dart';
 import 'findPetBreederspage.dart';
 import 'findPetSitterspage.dart';
+import 'developersPage.dart';  // Import the DeveloperPage
 import 'package:provider/provider.dart';  // Import provider for accessing ApplicationState
 import '../app_state.dart';
 import 'package:firebase_auth/firebase_auth.dart'; // Import Firebase Auth
@@ -21,7 +23,7 @@ class HamburgerMenu extends StatelessWidget {
 
     if (currentUser == null) {
       // If no user is logged in, show default data
-      return Drawer(
+      return const Drawer(
         child: Column(
           children: [
             UserAccountsDrawerHeader(
@@ -32,7 +34,7 @@ class HamburgerMenu extends StatelessWidget {
                 backgroundImage: AssetImage('assets/profile_placeholder.png'), // Default image
               ),
               decoration: BoxDecoration(
-                color: Colors.amber, // Header background
+                color: Color(0xFFFFCA4F),
               ),
             ),
             // Other ListTiles for unauthenticated users (you can adjust as per your app's need)
@@ -45,7 +47,6 @@ class HamburgerMenu extends StatelessWidget {
     String userEmail = currentUser.email ?? '';
     Map<String, dynamic> userProfile = userProfilePictures[userEmail] ?? {'image': 'assets/profile_placeholder.png', 'rating': 0.0};
     String profileImagePath = userProfile['image'] ?? 'assets/profile_placeholder.png';
-    double userRating = userProfile['rating'] ?? 0.0;
 
     return Drawer(
       child: Column(
@@ -56,28 +57,28 @@ class HamburgerMenu extends StatelessWidget {
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return UserAccountsDrawerHeader(
-                  accountName: Text('Loading...', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-                  accountEmail: Text('Please wait...'),
+                  accountName: const Text('Loading...', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                  accountEmail: const Text('Please wait...'),
                   currentAccountPicture: CircleAvatar(
                     radius: 60,
                     backgroundImage: AssetImage(profileImagePath), // Default image while loading
                   ),
-                  decoration: BoxDecoration(
-                    color: Colors.amber, // Header background
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFFFCA4F), // Header background
                   ),
                 );
               }
 
               if (!snapshot.hasData || !snapshot.data!.exists) {
                 return UserAccountsDrawerHeader(
-                  accountName: Text('Error', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-                  accountEmail: Text('User data not found'),
+                  accountName: const Text('Error', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                  accountEmail: const Text('User data not found'),
                   currentAccountPicture: CircleAvatar(
                     radius: 60,
                     backgroundImage: AssetImage(profileImagePath), // Default image in case of error
                   ),
-                  decoration: BoxDecoration(
-                    color: Colors.amber, // Header background
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFFFCA4F), // Header background
                   ),
                 );
               }
@@ -90,22 +91,22 @@ class HamburgerMenu extends StatelessWidget {
               String usernameWithAt = '@$username'; // Prepend '@' to the username
 
               return UserAccountsDrawerHeader(
-                accountName: Text(fullName, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                accountName: Text(fullName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
                 accountEmail: Text(usernameWithAt), // Display the username with '@'
                 currentAccountPicture: CircleAvatar(
                   radius: 60,
                   backgroundImage: AssetImage(profileImagePath), // Default image if not available
                 ),
-                decoration: BoxDecoration(
-                  color: Colors.amber, // Header background
+                decoration: const BoxDecoration(
+                  color: Color(0xFFFFCA4F), // Header background
                 ),
               );
             },
           ),
           // ListTiles for authenticated users
           ListTile(
-            title: Text('MY ACCOUNT'),
-            leading: Icon(Icons.account_circle),
+            title: const Text('MY ACCOUNT'),
+            leading: const Icon(Icons.account_circle),
             onTap: () {
               Navigator.push(
                 context,
@@ -114,28 +115,28 @@ class HamburgerMenu extends StatelessWidget {
             },
           ),
           ListTile(
-            title: Text('MY PALS'),
-            leading: Icon(Icons.pets),
+            title: const Text('MY PALS'),
+            leading: const Icon(Icons.pets),
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => ChatPage()),
+                MaterialPageRoute(builder: (context) => const ChatPage()),
               );
             },
           ),
           ListTile(
-            title: Text('FIND PALS'),
-            leading: Icon(Icons.search),
+            title: const Text('FIND PALS'),
+            leading: const Icon(Icons.search),
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => FindPetpals()),
+                MaterialPageRoute(builder: (context) => const FindPetpals()),
               );
             },
           ),
           ListTile(
-            title: Text('FIND BREEDERS'),
-            leading: Icon(Icons.people),
+            title: const Text('FIND BREEDERS'),
+            leading: const Icon(Icons.people),
             onTap: () {
               Navigator.push(
                 context,
@@ -144,22 +145,32 @@ class HamburgerMenu extends StatelessWidget {
             },
           ),
           ListTile(
-            title: Text('FIND PET-SITTERS'),
-            leading: Icon(Icons.home_repair_service),
+            title: const Text('FIND PET-SITTERS'),
+            leading: const Icon(Icons.home_repair_service),
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => FindPetSitters()),
+                MaterialPageRoute(builder: (context) => const FindPetSitters()),
               );
             },
           ),
-          Spacer(),
           ListTile(
-            title: Text(
+            title: const Text('DEVELOPERS'),  // New item added for Developers Page
+            leading: const Icon(Icons.code),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => DeveloperPage()),  // Navigate to DeveloperPage
+              );
+            },
+          ),
+          const Spacer(),
+          ListTile(
+            title: const Text(
               'LOG OUT',
               style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
             ),
-            leading: Icon(Icons.logout, color: Colors.red),
+            leading: const Icon(Icons.logout, color: Colors.red),
             onTap: () {
               // Call logOut method from ApplicationState
               final appState = Provider.of<ApplicationState>(context, listen: false);
@@ -168,7 +179,7 @@ class HamburgerMenu extends StatelessWidget {
               // Navigate to LandingPage after logout
               Navigator.pushAndRemoveUntil(
                 context,
-                MaterialPageRoute(builder: (context) => LoginPage()),
+                MaterialPageRoute(builder: (context) => const LoginPage()),
                     (route) => false, // This will remove all previous routes
               );
             },
