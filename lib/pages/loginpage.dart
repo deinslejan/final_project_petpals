@@ -1,9 +1,8 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:petpals/pages/chatPage.dart';
-import '../components/button.dart';
 import '../components/textfield.dart';
 import 'findPetpalspage.dart';
-import 'introduction.dart'; // Import the Introduction page here
+import 'introduction.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -20,17 +19,45 @@ class _LoginPageState extends State<LoginPage> {
   // Form key for validation
   final _formKey = GlobalKey<FormState>();
 
-  void login() {
+  // Firebase Auth instance
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+
+  // Boolean to toggle password visibility
+  bool _isPasswordVisible = false;
+
+  // Login function to authenticate the user
+  void login() async {
     if (_formKey.currentState!.validate()) {
-      // Perform login logic here
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => const ChatPage(),
-        ),
-      );
-    } else {
-      print("Validation failed");
+      try {
+        // Attempt to sign in with email and password
+        UserCredential userCredential = await _auth.signInWithEmailAndPassword(
+          email: emailController.text.trim(),
+          password: passwordController.text.trim(),
+        );
+
+        // If login is successful, navigate to the FindPetpals page
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const FindPetpals()),
+        );
+      } on FirebaseAuthException catch (e) {
+        // Handle Firebase errors (e.g., invalid email or password)
+        String errorMessage = 'Login failed. Please try again.';
+        if (e.code == 'user-not-found') {
+          errorMessage = 'No user found for that email.';
+        } else if (e.code == 'wrong-password') {
+          errorMessage = 'Wrong password provided for that user.';
+        }
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(errorMessage)),
+        );
+      } catch (e) {
+        // Handle other errors (e.g., network issues)
+        print('Unexpected error: $e');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Unexpected error: $e')),
+        );
+      }
     }
   }
 
@@ -92,7 +119,6 @@ class _LoginPageState extends State<LoginPage> {
                     if (value == null || value.isEmpty) {
                       return 'Please enter your email';
                     }
-                    // Basic email validation regex
                     if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
                       return 'Please enter a valid email';
                     }
@@ -110,19 +136,41 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 ),
                 const SizedBox(height: 5),
-                MyTextField(
-                  controller: passwordController,
-                  hintText: 'Enter Password',
-                  obscureText: true,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter your password';
-                    }
-                    if (value.length < 6) {
-                      return 'Password must be at least 6 characters';
-                    }
-                    return null;
-                  },
+                Stack(
+                  children: [
+                    MyTextField(
+                      controller: passwordController,
+                      hintText: 'Enter Password',
+                      obscureText: !_isPasswordVisible, // Toggle password visibility
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter your password';
+                        }
+                        if (value.length < 6) {
+                          return 'Password must be at least 6 characters';
+                        }
+                        return null;
+                      },
+                    ),
+                    Positioned(
+                      right: 0,
+                      top: 0,
+                      bottom: 0,
+                      child: IconButton(
+                        icon: Icon(
+                          _isPasswordVisible
+                              ? Icons.visibility
+                              : Icons.visibility_off,
+                          color: Colors.black,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _isPasswordVisible = !_isPasswordVisible;
+                          });
+                        },
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 40),
 

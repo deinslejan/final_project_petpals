@@ -1,42 +1,42 @@
 import 'package:flutter/material.dart';
-import 'package:petpals/pages/chatPage.dart';
-import 'package:petpals/pages/findPetBreederspage.dart';
-import 'package:petpals/pages/findPetpalspage.dart';
-import 'package:petpals/services/auth/login_or_reg.dart';
-import 'pages/landingpage.dart';
-import 'pages/findPetBreederspage.dart';
-import 'pages/findPetSitterspage.dart';
-import 'pages/petBreederpage.dart';
-import 'pages/petSitterpage.dart';
+import 'package:petpals/pages/landingpage.dart';
+import 'package:provider/provider.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'app_state.dart';
+import 'pages/chatPage.dart';
+import 'firebase_options.dart';
+import 'package:firebase_auth/firebase_auth.dart'; // Import Firebase Auth
 
-void main() {
-  runApp(const MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize Firebase
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform, // Make sure to provide the correct options
+  );
+
+  runApp(
+    ChangeNotifierProvider(
+      create: (_) => ApplicationState(),
+      child: MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: LandingPage(),
+      home: Consumer<ApplicationState>(
+        builder: (context, appState, _) {
+          if (appState.loggedIn) {
+            return ChatPage(); // If logged in, show ChatPage
+          } else {
+            return LandingPage(); // If not logged in, show LandingPage
+          }
+        },
+      ),
     );
-  }
-}
-
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  final String title;
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold();
   }
 }

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';  // Import Firebase Auth
 import 'loginpage.dart';
 import 'findPetpalspage.dart';
 
@@ -15,6 +17,7 @@ class _SignUpPageState extends State<SignUpPage> {
   final firstNameController = TextEditingController();
   final lastNameController = TextEditingController();
   final emailController = TextEditingController();
+  final usernameController = TextEditingController();  // New username controller
   final passwordController = TextEditingController();
   final confirmPasswordController = TextEditingController();
 
@@ -26,18 +29,94 @@ class _SignUpPageState extends State<SignUpPage> {
   // Form key for validation
   final _formKey = GlobalKey<FormState>();
 
-  void signUp() {
+  // Firestore instance
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;  // Firebase Authentication instance
+
+  // Sign Up function to store data in Firestore and Firebase Authentication
+  void signUp() async {
     if (_formKey.currentState!.validate()) {
-      // Navigation to FindPetpals page after successful validation
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => const FindPetpals(), // Navigate to FindPetpals page
-        ),
-      );
+      try {
+        // Check if email or username already exists in Firestore
+        bool emailExists = await _checkIfEmailExists();
+        bool usernameExists = await _checkIfUsernameExists();
+
+        if (emailExists) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Email is already in use')),
+          );
+          return;
+        }
+
+        if (usernameExists) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Username is already taken')),
+          );
+          return;
+        }
+
+        // Create user with Firebase Authentication
+        UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
+          email: emailController.text.trim(),
+          password: passwordController.text.trim(),
+        );
+
+        // Firestore data structure
+        Map<String, dynamic> userData = {
+          'firstName': firstNameController.text.trim(),
+          'lastName': lastNameController.text.trim(),
+          'email': emailController.text.trim(),
+          'username': usernameController.text.trim(), // Store username in Firestore
+          'isPetOwner': isPetOwner,
+          'isPetSitter': isPetSitter,
+          'isPetBreeder': isPetBreeder,
+          'createdAt': Timestamp.now(), // Add timestamp for when the user signed up
+        };
+
+        // Save user data in Firestore with the user ID
+        await _firestore.collection('users').doc(userCredential.user!.uid).set(userData);
+
+        // Navigate to the LoginPage after successful sign-up
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const LoginPage()),
+        );
+      } on FirebaseAuthException catch (e) {
+        // Handle Firebase authentication errors
+        if (e.code == 'email-already-in-use') {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Email is already in use')),
+          );
+        } else if (e.code == 'weak-password') {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Password is too weak')),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error: ${e.message}')),
+          );
+        }
+      } catch (e) {
+        // Handle other errors
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e')),
+        );
+      }
     } else {
       print("Validation Failed");
     }
+  }
+
+  // Helper function to check if the email already exists
+  Future<bool> _checkIfEmailExists() async {
+    final querySnapshot = await _firestore.collection('users').where('email', isEqualTo: emailController.text.trim()).get();
+    return querySnapshot.docs.isNotEmpty;
+  }
+
+  // Helper function to check if the username already exists
+  Future<bool> _checkIfUsernameExists() async {
+    final querySnapshot = await _firestore.collection('users').where('username', isEqualTo: usernameController.text.trim()).get();
+    return querySnapshot.docs.isNotEmpty;
   }
 
   // Helper function for TextFormField styling
@@ -80,14 +159,14 @@ class _SignUpPageState extends State<SignUpPage> {
       backgroundColor: Colors.white,
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        backgroundColor: const Color(0xFFFFCA4F), // Yellow header
+        backgroundColor: const Color(0xFFFFCA4F),
         title: Align(
-          alignment: Alignment.centerLeft, // Align text to the left
+          alignment: Alignment.centerLeft,
           child: Text(
             "SIGN UP",
             style: const TextStyle(
-              fontFamily: 'BebasNeue', // Custom Bebas Neue font
-              fontSize: 32, // Adjust font size
+              fontFamily: 'BebasNeue',
+              fontSize: 32,
               fontWeight: FontWeight.w400,
               color: Colors.black,
               letterSpacing: 2.0,
@@ -104,38 +183,27 @@ class _SignUpPageState extends State<SignUpPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: 20),
-
-                // Logo
                 Center(
                   child: Image.asset(
-                    'images/name_logo.png', // Replace with your image path
+                    'images/name_logo.png',
                     height: 100,
                   ),
                 ),
-
                 const SizedBox(height: 20),
-
-                // First Name
                 TextFormField(
                   controller: firstNameController,
                   decoration: inputDecoration("First Name", "First Name"),
-                  validator: (value) => value == null || value.isEmpty
-                      ? 'Please enter your first name'
-                      : null,
+                  validator: (value) =>
+                  value == null || value.isEmpty ? 'Please enter your first name' : null,
                 ),
                 const SizedBox(height: 10),
-
-                // Last Name
                 TextFormField(
                   controller: lastNameController,
                   decoration: inputDecoration("Last Name", "Last Name"),
-                  validator: (value) => value == null || value.isEmpty
-                      ? 'Please enter your last name'
-                      : null,
+                  validator: (value) =>
+                  value == null || value.isEmpty ? 'Please enter your last name' : null,
                 ),
                 const SizedBox(height: 10),
-
-                // Email
                 TextFormField(
                   controller: emailController,
                   decoration: inputDecoration("Email", "example@gmail.com"),
@@ -150,8 +218,14 @@ class _SignUpPageState extends State<SignUpPage> {
                   },
                 ),
                 const SizedBox(height: 10),
-
-                // Password
+                // Username field
+                TextFormField(
+                  controller: usernameController,  // Username controller
+                  decoration: inputDecoration("Username", "Choose a username"),
+                  validator: (value) =>
+                  value == null || value.isEmpty ? 'Please enter your username' : null,
+                ),
+                const SizedBox(height: 10),
                 TextFormField(
                   controller: passwordController,
                   obscureText: true,
@@ -161,19 +235,14 @@ class _SignUpPageState extends State<SignUpPage> {
                       : null,
                 ),
                 const SizedBox(height: 10),
-
-                // Confirm Password
                 TextFormField(
                   controller: confirmPasswordController,
                   obscureText: true,
                   decoration: inputDecoration("Confirm Password", "******"),
-                  validator: (value) => value != passwordController.text
-                      ? 'Passwords do not match'
-                      : null,
+                  validator: (value) =>
+                  value != passwordController.text ? 'Passwords do not match' : null,
                 ),
                 const SizedBox(height: 20),
-
-                // Role Selection
                 Text(
                   "I am a/an...",
                   style: GoogleFonts.jost(
@@ -213,15 +282,12 @@ class _SignUpPageState extends State<SignUpPage> {
                   ],
                 ),
                 const SizedBox(height: 20),
-
-                // Sign Up Button
                 Center(
                   child: ElevatedButton(
                     onPressed: signUp,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.grey.shade400,
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 50, vertical: 14),
+                      padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 14),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
@@ -235,10 +301,7 @@ class _SignUpPageState extends State<SignUpPage> {
                     ),
                   ),
                 ),
-
                 const SizedBox(height: 10),
-
-                // Navigate to Login Page
                 GestureDetector(
                   onTap: () {
                     Navigator.push(
