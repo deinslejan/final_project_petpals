@@ -11,7 +11,7 @@ class PetBreederProfile extends StatelessWidget {
       home: Scaffold(
         backgroundColor: Colors.white,
         appBar: AppBar(
-          backgroundColor: Colors.amber[600],
+          backgroundColor: const Color(0xFFFFCA4F),
           title: Row(
             mainAxisAlignment: MainAxisAlignment.end, // Aligns text to the right
             children: [
