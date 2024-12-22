@@ -68,9 +68,9 @@ class _DeveloperPageState extends State<DeveloperPage> {
         textTheme: GoogleFonts.jostTextTheme(),
       ),
       home: Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: const Color(0xFFFFF9E5),
         appBar: AppBar(
-          backgroundColor: Colors.amber,
+          backgroundColor: const Color(0xFFFFCA4F),
           title: Text(
             'PETPAL DEVELOPERS',
             style: GoogleFonts.jost(fontWeight: FontWeight.bold),

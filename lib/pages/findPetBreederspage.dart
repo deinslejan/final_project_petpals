@@ -5,7 +5,6 @@ import 'hamburger_menu.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'userPictures.dart';
-import 'breederProfilepage.dart';
 
 class FindPetBreeders extends StatefulWidget {
   const FindPetBreeders({super.key});
@@ -94,7 +93,7 @@ class _FindPetBreedersState extends State<FindPetBreeders> {
         textTheme: GoogleFonts.jostTextTheme(),
       ),
       home: Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: const Color(0xFFFFF9E5),
         appBar: AppBar(
           toolbarHeight: 80,
           backgroundColor: const Color(0xFFFFCA4F),

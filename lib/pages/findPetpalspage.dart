@@ -89,6 +89,7 @@ class _FindPetpalsState extends State<FindPetpals> {
         textTheme: GoogleFonts.jostTextTheme(),
       ),
       home: Scaffold(
+        backgroundColor: const Color(0xFFFFF9E5),
         appBar: AppBar(
           toolbarHeight: 80,
           backgroundColor: const Color(0xFFFFCA4F),
