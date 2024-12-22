@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:petpals/pages/landingpage.dart';
+import 'package:petpals/pages/splashScreen.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'app_state.dart';
 import 'pages/chatPage.dart';
 import 'firebase_options.dart';
-import 'package:firebase_auth/firebase_auth.dart'; // Import Firebase Auth
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -33,7 +32,7 @@ class MyApp extends StatelessWidget {
           if (appState.loggedIn) {
             return ChatPage(); // If logged in, show ChatPage
           } else {
-            return LandingPage(); // If not logged in, show LandingPage
+            return SplashScreen(); // If not logged in, show LandingPage
           }
         },
       ),
