@@ -39,7 +39,7 @@ class YourAccountPage extends StatelessWidget {
     // Get the profile picture and rating from userProfiles.dart using the email
     Map<String, dynamic> userProfile = userProfilePictures[userEmail] ?? {'image': 'assets/profile_placeholder.png', 'rating': 0.0};
 
-    String profileImagePath = userProfile['image'] ?? 'assets/profile_placeholder.png';
+    final profileImagePath = AssetManager.getProfileImage(userEmail);
     double userRating = userProfile['rating'] ?? 0.0;
 
     return Scaffold(
@@ -216,15 +216,11 @@ class YourAccountPage extends StatelessWidget {
             // Fetch Pets from Firebase
             StreamBuilder<QuerySnapshot>(
               stream: currentUser != null
-                  ? _firestore
-                  .collection('users')
-                  .doc(currentUser.uid)
-                  .collection('pets')
-                  .snapshots()
-                  : const Stream.empty(), // Ensure a valid empty stream if user is null
+                  ? _firestore.collection('users').doc(currentUser.uid).collection('pets').snapshots()
+                  : const Stream.empty(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const CircularProgressIndicator();
+                  return const Center(child: CircularProgressIndicator());
                 }
                 if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
                   return Text(
@@ -234,13 +230,37 @@ class YourAccountPage extends StatelessWidget {
                 }
 
                 final pets = snapshot.data!.docs;
+                List<Map<String, dynamic>> petList = [];
+
+                for (var pet in pets) {
+                  final petData = pet.data() as Map<String, dynamic>;
+                  final petName = petData['name'] ?? 'Unknown Pet';
+
+                  // Apply the same logic to resolve pet image based on pet name
+                  String petImage = petProfilePictures.entries
+                      .firstWhere(
+                        (entry) => entry.value['name'] == petName,
+                    orElse: () => const MapEntry('', {'image': 'assets/pet_placeholder.png'}), // Default image if no match is found
+                  )
+                      .value['image'] ?? 'assets/pet_placeholder.png';
+
+                  // Add pet details to list
+                  petList.add({
+                    "name": petName,
+                    "type": petData['type'] ?? 'Unknown Type',
+                    "gender": petData['gender'] ?? 'Unknown Gender',
+                    "image": petImage,
+                  });
+                }
+
+                // Now map the pets to PetCard widget
                 return Column(
-                  children: pets.map((pet) {
-                    final petData = pet.data() as Map<String, dynamic>;
+                  children: petList.map((pet) {
                     return PetCard(
-                      name: petData['name'] ?? 'Unknown',
-                      type: petData['type'] ?? 'Unknown',
-                      gender: petData['gender'] ?? 'Unknown',
+                      name: pet['name'],
+                      type: pet['type'],
+                      gender: pet['gender'],
+                      image: pet['image'], // Use resolved pet image
                     );
                   }).toList(),
                 );
@@ -277,11 +297,14 @@ class PetCard extends StatelessWidget {
   final String name;
   final String type;
   final String gender;
+  final String image; // Path to the local asset image
 
-  const PetCard({super.key,
+  const PetCard({
+    super.key,
     required this.name,
     required this.type,
     required this.gender,
+    required this.image,
   });
 
   @override
@@ -291,6 +314,13 @@ class PetCard extends StatelessWidget {
       elevation: 4,
       child: ListTile(
         contentPadding: const EdgeInsets.all(16),
+        leading: CircleAvatar(
+          backgroundImage: AssetImage(image),
+          radius: 30,
+          onBackgroundImageError: (_, __) {
+            print('Failed to load image: $image');
+          },
+        ),
         title: Text(name, style: GoogleFonts.jost(fontWeight: FontWeight.bold)),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -301,5 +331,14 @@ class PetCard extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+class AssetManager {
+  static const String defaultProfileImage = 'assets/profile_placeholder.png';
+  static const String defaultPetImage = 'assets/pet_placeholder.png';
+
+  static String getProfileImage(String email) {
+    return userProfilePictures[email]?['image'] ?? defaultProfileImage;
   }
 }

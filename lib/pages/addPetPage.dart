@@ -52,10 +52,9 @@ class _AddPetPageState extends State<AddPetPage> {
 
   // Function to add a pet to the current user's document
   Future<void> _addPetToUser() async {
-    // Get the current user
     User? user = _auth.currentUser;
+
     if (user == null) {
-      // If no user is logged in, show an error
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('You need to be logged in to add a pet.')),
       );
@@ -63,32 +62,31 @@ class _AddPetPageState extends State<AddPetPage> {
     }
 
     if (userLocation == null || username == null) {
-      // If location or username is not available, show an error
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Unable to retrieve user details.')),
       );
       return;
     }
 
-    // Create a new pet document
+    // Pet data
     Map<String, dynamic> petData = {
-      'name': petNameController.text,
-      'breed': breedController.text,
-      'type': selectedType == 'Other' ? otherTypeController.text : selectedType,
+      'name': petNameController.text.trim(),
+      'breed': breedController.text.trim(),
+      'type': selectedType == 'Other' ? otherTypeController.text.trim() : selectedType,
       'gender': selectedGender,
-      'description': descriptionController.text,
-      'location': userLocation, // Add the user's location here
-      'ownerID': username, // Add the current user's username as the ownerID
-      'createdAt': Timestamp.now(), // Timestamp for when the pet was added
+      'description': descriptionController.text.trim(),
+      'location': userLocation,
+      'ownerID': username, // Reference the current user's username
+      'createdAt': Timestamp.now(),
     };
 
-    // Save the pet in the Firestore under the user's document
     try {
+      // Add pet to the user's subcollection
       await _firestore.collection('users').doc(user.uid).collection('pets').add(petData);
+
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Pet added successfully!')),
       );
-      // Optionally, clear the form after submission
       _clearForm();
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
