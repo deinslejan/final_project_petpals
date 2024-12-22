@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "385164886188",
+    "project_id": "jalamico-petpals-1aa60",
+    "storage_bucket": "jalamico-petpals-1aa60.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:385164886188:android:5b3fd7c5819f4c5e46df09",
+        "android_client_info": {
+          "package_name": "com.petpals.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAfDLZaWtIyGCYKv8sLpYjgFSqLacBhM0k"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

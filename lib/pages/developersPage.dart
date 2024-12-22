@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'hamburger_menu.dart';  // Make sure to import the HamburgerMenu widget
 
 class DeveloperPage extends StatefulWidget {
   @override
@@ -67,24 +68,22 @@ class _DeveloperPageState extends State<DeveloperPage> {
         textTheme: GoogleFonts.jostTextTheme(),
       ),
       home: Scaffold(
-        backgroundColor: Colors.white,
-        appBar: PreferredSize(
-          preferredSize: const Size.fromHeight(80.0),
-          child: AppBar(
-            toolbarHeight: 80,
-            backgroundColor: const Color(0xFFFFCA4F),
-            title: const Padding(
-              padding: EdgeInsets.only(left: 5, top: 30),
-              child: Text(
-                "DEVELOPER'S PAGE",
-                style: TextStyle(
-                  fontSize: 25,
-                  fontWeight: FontWeight.w900,
-                ),
-              ),
+        backgroundColor: const Color(0xFFFFF9E5),
+        appBar: AppBar(
+          backgroundColor: const Color(0xFFFFCA4F),
+          title: Text(
+            'PETPAL DEVELOPERS',
+            style: GoogleFonts.jost(fontWeight: FontWeight.bold),
+          ),
+          centerTitle: true,
+          leading: Builder(
+            builder: (context) => IconButton(
+              icon: const Icon(Icons.menu, color: Colors.black),
+              onPressed: () => Scaffold.of(context).openDrawer(),
             ),
           ),
         ),
+        drawer: HamburgerMenu(),  // Integrate the HamburgerMenu here
         body: ListView(
           padding: const EdgeInsets.all(16.0),
           children: [

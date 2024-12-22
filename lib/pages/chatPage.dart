@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'hamburger_menu.dart';
-import 'chats.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'userPictures.dart';  // Import the user profile pictures map
+import 'chats.dart';  // Import the ChatScreen
 
 class ChatPage extends StatefulWidget {
   const ChatPage({super.key});
@@ -11,155 +14,91 @@ class ChatPage extends StatefulWidget {
 }
 
 class _ChatPageFilter extends State<ChatPage> {
-  final List<Map<String, dynamic>> _petPals = [
-    {
-      "name": "KKUMA",
-      "location": "España, Manila",
-      "image": "images/kkuma.png"
-    },
-    {
-      "name": "BOKKEU",
-      "location": "España, Manila",
-      "image": "images/bokkeu.png"
-    },
-    {
-      "name": "SAPPHIRE",
-      "location": "BGC, Taguig",
-      "image": "images/sapphire.png"
-    },
-    {
-      "name": "BAM BOO",
-      "location": "Litex, Quezon City",
-      "image": "images/bamboo.png"
-    },
-    {
-      "name": "MR. DARCY",
-      "location": "España, Manila",
-      "image": "images/darcy.png"
-    },
-    {"name": "ALVIN", "location": "Baguio", "image": "images/alvin.png"},
-    {"name": "ALASTOR", "location": "Tagaytay", "image": "images/alastor.png"},
-    {
-      "name": "CAPT. SPARROW",
-      "location": "Bulakan, Bulacan",
-      "image": "images/sparrow.png"
-    },
-    {
-      "name": "SIMBA",
-      "location": "Silang, Cavite",
-      "image": "images/simba.png"
-    },
-  ];
-
-  final List<Map<String, dynamic>> _petBreeders = [
-    {
-      "name": "DIEGO",
-      "location": "Makati City",
-      "image": "images/petBreeders/diego.png"
-    },
-    {
-      "name": "MJ",
-      "location": "BGC, Taguig",
-      "image": "images/petBreeders/mj.png"
-    },
-    {
-      "name": "MARK",
-      "location": "Baguio City",
-      "image": "images/petBreeders/mark.png"
-    },
-    {
-      "name": "SAMUEL",
-      "location": "Jaro, Iloilo",
-      "image": "images/petBreeders/samuel.png"
-    },
-    {
-      "name": "BEYONCE",
-      "location": "España, Manila",
-      "image": "images/petBreeders/beyonce.png"
-    },
-    {
-      "name": "JAMES",
-      "location": "Poblacion, Makati",
-      "image": "images/alvin.png"
-    },
-    {
-      "name": "GISELLE",
-      "location": "Taft Ave, Manila",
-      "image": "images/petBreeders/giselle.png"
-    },
-    {
-      "name": "CHARLIE",
-      "location": "España, Manila",
-      "image": "images/petBreeders/charlie.png"
-    },
-  ];
-
-  final List<Map<String, dynamic>> _petSitters = [
-    {
-      "name": "MIGOY",
-      "location": "Bulacan",
-      "image": "images/petSitters/mingyu.png"
-    },
-    {
-      "name": "BASTI",
-      "location": "España, Manila",
-      "image": "images/petSitters/jeno.png"
-    },
-    {
-      "name": "LEJAN",
-      "location": "Novaliches, Quezon City",
-      "image": "images/petSitters/lejan.png"
-    },
-    {
-      "name": "JAMIE",
-      "location": "Makati City",
-      "image": "images/petSitters/jamie.png"
-    },
-    {
-      "name": "JELO",
-      "location": "España, Manila",
-      "image": "images/petSitters/jeonghan.png"
-    },
-    {
-      "name": "BEA",
-      "location": "San Jose del Monte, Bulacan",
-      "image": "images/petSitters/bea.png"
-    },
-    {
-      "name": "HANBIN",
-      "location": "Valenzuela",
-      "image": "images/petSitters/haobin1.png"
-    },
-    {
-      "name": "HAO",
-      "location": "Valenzuela",
-      "image": "images/petSitters/haobin2.png"
-    },
-  ];
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   List<Map<String, dynamic>> _foundUsers = [];
   String _selectedRole = "ALL";
+  User? _currentUser;
 
   @override
   void initState() {
-    _filterByRole("ALL");
     super.initState();
+    _currentUser = _auth.currentUser;
+    _filterByRole("ALL");
   }
 
-  void _filterByRole(String role) {
-    List<Map<String, dynamic>> results;
-    switch (role) {
-      case "PETPALS":
-        results = _petPals;
-        break;
-      case "BREEDERS":
-        results = _petBreeders;
-        break;
-      case "SITTERS":
-        results = _petSitters;
-        break;
-      default:
-        results = [..._petPals, ..._petBreeders, ..._petSitters];
+  Future<void> _filterByRole(String role) async {
+    List<Map<String, dynamic>> results = [];
+
+    // Handle PETPALS and ALL filter separately
+    if (role == "PETPALS" || role == "ALL") {
+      // Fetch pets directly for PETPALS and add them to the ALL filter as well
+      try {
+        QuerySnapshot usersSnapshot = await _firestore.collection('users').get();
+
+        for (var userDoc in usersSnapshot.docs) {
+          // Skip the current logged-in user by checking the email
+          if ((userDoc.data() as Map<String, dynamic>)['email'] == _currentUser?.email) continue;
+
+          // Fetch pets subcollection for each user
+          QuerySnapshot petsSnapshot = await _firestore
+              .collection('users')
+              .doc(userDoc.id)
+              .collection('pets')
+              .get();
+
+          for (var petDoc in petsSnapshot.docs) {
+            var petData = petDoc.data() as Map<String, dynamic>;
+
+            // Add the pet details to the results
+            results.add({
+              "name": petData['name'] ?? 'Unknown Pet',
+              "image": 'images/pet_default_image.png', // You can change the image path here for pets
+              "location": petData['location'] ?? 'Unknown Location',
+            });
+          }
+        }
+      } catch (e) {
+        print("Error fetching pets: $e");
+      }
+    }
+
+    // Handle SITTERS and BREEDERS logic
+    try {
+      QuerySnapshot snapshot = await _firestore.collection('users').get();
+
+      for (var doc in snapshot.docs) {
+        var data = doc.data() as Map<String, dynamic>;
+
+        // Skip the current logged-in user by checking the email
+        if (data['email'] == _currentUser?.email) continue;
+
+        // Combine firstName and lastName for the full name
+        String userName = (data['firstName'] ?? '') + ' ' + (data['lastName'] ?? '');
+
+        // Check the user's email against the userProfilePictures map to get the image
+        String userEmail = data['email'];
+        String userImage = userProfilePictures[userEmail]?['image'] ?? 'images/default.png';
+
+        // Filter based on the role
+        bool isPetBreeder = data['isPetBreeder'] ?? false;
+        bool isPetSitter = data['isPetSitter'] ?? false;
+
+        if ((role == "ALL") ||
+            (role == "BREEDERS" && isPetBreeder) ||
+            (role == "SITTERS" && isPetSitter)) {
+          results.add({
+            "name": userName.trim().isEmpty ? 'Unknown Name' : userName.trim(),
+            "location": data['location'] ?? "Unknown Location",
+            "image": userImage,
+            "isBreeder": isPetBreeder,
+            "isSitter": isPetSitter,
+          });
+        }
+      }
+    } catch (e) {
+      print("Error fetching users: $e");
     }
 
     setState(() {
@@ -171,33 +110,16 @@ class _ChatPageFilter extends State<ChatPage> {
   void _runFilter(String query) {
     List<Map<String, dynamic>> results = [];
 
+    // If query is empty, reapply the filter based on the selected role
     if (query.isEmpty) {
-      // If search is empty, reset the filter
-      _filterByRole(_selectedRole);
+      _filterByRole(_selectedRole);  // Reapply the role-based filter when search is empty
     } else {
-      // Select the active list based on the current role
-      List<Map<String, dynamic>> activeList;
-
-      switch (_selectedRole) {
-        case "PETPALS":
-          activeList = _petPals;
-          break;
-        case "BREEDERS":
-          activeList = _petBreeders;
-          break;
-        case "SITTERS":
-          activeList = _petSitters;
-          break;
-        default:
-          activeList = [..._petPals, ..._petBreeders, ..._petSitters];
-      }
-
-      // Filter users where the name starts with the search keyword
-      results = activeList.where((user) {
-        String userName =
-            user["name"]?.toLowerCase().trim() ?? ""; // Safely handle null
+      // Perform filtering by name, ensuring the name starts with the query
+      results = _foundUsers.where((user) {
+        String userName = user["name"]?.toLowerCase().trim() ?? ""; // Safely handle null
         String keyword = query.toLowerCase().trim();
-        print('Comparing: "$userName" starts with "$keyword"'); // Debugging log
+
+        // Ensure search starts with the keyword (case-insensitive)
         return userName.startsWith(keyword);
       }).toList();
 
@@ -222,9 +144,9 @@ class _ChatPageFilter extends State<ChatPage> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      theme: ThemeData(
-          textTheme: GoogleFonts.jostTextTheme()), // Apply the Jost font
+      theme: ThemeData(textTheme: GoogleFonts.jostTextTheme()),
       home: Scaffold(
+        backgroundColor: const Color(0xFFFFF9E5),
         appBar: AppBar(
           toolbarHeight: 80, // Increase AppBar height
           backgroundColor: const Color(0xFFFFCA4F),
@@ -243,10 +165,9 @@ class _ChatPageFilter extends State<ChatPage> {
                   const SizedBox(width: 10),
                   Expanded(
                     child: TextField(
-                      onChanged: (value) =>
-                          _runFilter(value), // Search function
+                      onChanged: (value) => _runFilter(value),
                       decoration: const InputDecoration(
-                        hintText: 'Search for my pals',
+                        hintText: 'Search for your Pals',
                         border: InputBorder.none,
                         contentPadding: EdgeInsets.only(left: 10),
                       ),
@@ -255,7 +176,6 @@ class _ChatPageFilter extends State<ChatPage> {
                   IconButton(
                     icon: const Icon(Icons.search, color: Colors.grey),
                     onPressed: () {
-                      // Placeholder for search button functionality
                     },
                   ),
                 ],
@@ -286,48 +206,51 @@ class _ChatPageFilter extends State<ChatPage> {
             Expanded(
               child: _foundUsers.isNotEmpty
                   ? ListView.separated(
-                      itemBuilder: (context, index) {
-                        return InkWell(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => ChatScreen(),
-                              ),
-                            );
-                          },
-                          child: ListTile(
-                            leading: CircleAvatar(
-                              backgroundImage:
-                                  AssetImage(_foundUsers[index]['image']),
-                              radius: 30,
-                            ),
-                            title: Text(
-                              _foundUsers[index]['name'],
-                              style: const TextStyle(
-                                fontFamily: 'Bebas Neue',
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            subtitle: Text(
-                              "Location: ${_foundUsers[index]['location']}",
-                              style: const TextStyle(fontSize: 16),
-                            ),
+                itemBuilder: (context, index) {
+                  return GestureDetector(
+                    onTap: () {
+                      // Redirect to ChatScreen when a user is tapped
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ChatScreen(
+                            userName: _foundUsers[index]['name'],
+                            userImage: _foundUsers[index]['image'],
                           ),
-                        );
-                      },
-                      separatorBuilder: (context, index) =>
-                          const Divider(thickness: 0.5),
-                      itemCount: _foundUsers.length,
-                    )
-                  : const Center(
-                      child: Text(
-                        'No results found',
-                        style: TextStyle(fontSize: 18),
+                        ),
+                      );
+                    },
+                    child: ListTile(
+                      leading: CircleAvatar(
+                        backgroundImage: NetworkImage(_foundUsers[index]['image']),
+                        radius: 30,
+                      ),
+                      title: Text(
+                        _foundUsers[index]['name'],
+                        style: const TextStyle(
+                          fontFamily: 'Bebas Neue',
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      subtitle: Text(
+                        "Location: ${_foundUsers[index]['location']}",
+                        style: const TextStyle(fontSize: 16),
                       ),
                     ),
-            ),
+                  );
+                },
+                separatorBuilder: (context, index) =>
+                const Divider(thickness: 0.5),
+                itemCount: _foundUsers.length,
+              )
+                  : const Center(
+                child: Text(
+                  'No results found',
+                  style: TextStyle(fontSize: 18),
+                ),
+              ),
+            )
           ],
         ),
       ),

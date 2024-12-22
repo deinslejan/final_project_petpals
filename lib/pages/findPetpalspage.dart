@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'hamburger_menu.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';  // Firebase Firestore
 import 'petProfile.dart';
 
 class FindPetpals extends StatefulWidget {
@@ -11,85 +12,73 @@ class FindPetpals extends StatefulWidget {
 }
 
 class _FindPetpalsState extends State<FindPetpals> {
-  final List<Map<String, dynamic>> _sampleUsers = [
-    {
-      "name": "KKUMA",
-      "breed": "Coton de Tulear",
-      "location": "España, Manila",
-      "image": "images/kkuma.png"
-    },
-    {
-      "name": "BOKKEU",
-      "breed": "Bichon Frise",
-      "location": "España, Manila",
-      "image": "images/bokkeu.png"
-    },
-    {
-      "name": "SAPPHIRE",
-      "breed": "Turkish Angora",
-      "location": "BGC, Taguig",
-      "image": "images/sapphire.png"
-    },
-    {
-      "name": "BAM BOO",
-      "breed": "Amazon Parrot",
-      "location": "Litex, Quezon City",
-      "image": "images/bamboo.png"
-    },
-    {
-      "name": "MR. DARCY",
-      "breed": "Hamster",
-      "location": "España, Manila",
-      "image": "images/darcy.png"
-    },
-    {
-      "name": "ALVIN",
-      "breed": "Hamster",
-      "location": "Baguio",
-      "image": "images/alvin.png"
-    },
-    {
-      "name": "ALASTOR",
-      "breed": "Siberian Husky",
-      "location": "Tagaytay",
-      "image": "images/alastor.png"
-    },
-    {
-      "name": "CAPT. SPARROW",
-      "breed": "Amazon Parrot",
-      "location": "Bulakan, Bulacan",
-      "image": "images/sparrow.png"
-    },
-    {
-      "name": "SIMBA",
-      "breed": "Persian Cat",
-      "location": "Silang, Cavite",
-      "image": "images/simba.png"
-    },
-  ];
-
-  List<Map<String, dynamic>> _foundUsers = [];
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  List<Map<String, dynamic>> _foundPets = [];
 
   @override
   void initState() {
-    _foundUsers = _sampleUsers; // Initialize with all pets
     super.initState();
+    _fetchPets();
+  }
+// Declare a list to hold the original pets list (unfiltered)
+  List<Map<String, dynamic>> allPets = [];
+
+// Fetch pets from Firestore
+  Future<void> _fetchPets() async {
+    List<Map<String, dynamic>> results = [];
+    try {
+      // Fetch all users
+      QuerySnapshot usersSnapshot = await _firestore.collection('users').get();
+
+      for (var userDoc in usersSnapshot.docs) {
+        QuerySnapshot petsSnapshot = await _firestore
+            .collection('users')
+            .doc(userDoc.id)
+            .collection('pets')
+            .get();
+
+        for (var petDoc in petsSnapshot.docs) {
+          var petData = petDoc.data() as Map<String, dynamic>;
+
+          // Add pet details to results
+          results.add({
+            "name": petData['name'] ?? 'Unknown Pet',
+            "breed": petData['breed'] ?? 'Unknown Breed',
+            "location": petData['location'] ?? 'Unknown Location',
+            "image": petData['image'] ?? 'images/default.png',
+          });
+        }
+      }
+    } catch (e) {
+      print("Error fetching pets: $e");
+    }
+
+    // Store the full list of pets in allPets and update foundPets for display
+    setState(() {
+      allPets = results;  // Store the full list
+      _foundPets = allPets;  // Display all pets initially
+    });
   }
 
-  // Filtering function
+// Filtering function
   void _runFilter(String enteredKeyword) {
     List<Map<String, dynamic>> results = [];
+
+    // If the entered keyword is empty, show all pets
     if (enteredKeyword.isEmpty) {
-      results = _sampleUsers; // Show all pets if no keyword
+      results = allPets; // Restore the original list of pets
     } else {
-      results = _sampleUsers.where((user) {
-        String userName = user["name"].toLowerCase().trim();
+      // Filter the list based on the entered keyword
+      results = allPets.where((pet) {
+        String petName = pet["name"].toLowerCase().trim();
         String keyword = enteredKeyword.toLowerCase().trim();
-        return userName.startsWith(keyword); // Match if the name starts with the entered keyword
+        return petName.startsWith(keyword); // Match if the name starts with the entered keyword
       }).toList();
     }
+
+    // Update the found pets list and notify the UI
     setState(() {
-      _foundUsers = results;
+      _foundPets = results;
     });
   }
 
@@ -100,6 +89,7 @@ class _FindPetpalsState extends State<FindPetpals> {
         textTheme: GoogleFonts.jostTextTheme(),
       ),
       home: Scaffold(
+        backgroundColor: const Color(0xFFFFF9E5),
         appBar: AppBar(
           toolbarHeight: 80,
           backgroundColor: const Color(0xFFFFCA4F),
@@ -135,10 +125,10 @@ class _FindPetpalsState extends State<FindPetpals> {
           ),
         ),
         drawer: HamburgerMenu(),
-        body: _foundUsers.isNotEmpty
+        body: _foundPets.isNotEmpty
             ? ListView.separated(
           itemBuilder: (context, index) {
-            final pet = _foundUsers[index];
+            final pet = _foundPets[index];
             return InkWell(
               onTap: () {
                 Navigator.push(
@@ -150,7 +140,7 @@ class _FindPetpalsState extends State<FindPetpals> {
               },
               child: ListTile(
                 leading: CircleAvatar(
-                  backgroundImage: AssetImage(pet['image']),
+                  backgroundImage: NetworkImage(pet['image']),
                   radius: 30,
                 ),
                 title: Text(
@@ -174,7 +164,7 @@ class _FindPetpalsState extends State<FindPetpals> {
           separatorBuilder: (context, index) {
             return const Divider(thickness: 0.5);
           },
-          itemCount: _foundUsers.length,
+          itemCount: _foundPets.length,
         )
             : const Center(
           child: Text(

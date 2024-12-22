@@ -1,12 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'findPetpalspage.dart';
 import 'loginpage.dart';
+import 'signup.dart';
 
 class LandingPage extends StatelessWidget {
   const LandingPage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    // Check if a user is logged in and redirect if necessary
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      Future.microtask(() {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const FindPetpals(), // Redirect to home screen
+          ),
+        );
+      });
+    }
+
     return Scaffold(
       backgroundColor: const Color(0xFFFFCA4F),
       body: SafeArea(
@@ -36,6 +52,7 @@ class LandingPage extends StatelessWidget {
 
                 const SizedBox(height: 30),
 
+                // Log In Button
                 GestureDetector(
                   onTap: () {
                     // Navigate to LoginPage
@@ -85,7 +102,13 @@ class LandingPage extends StatelessWidget {
                 // Sign-up link
                 GestureDetector(
                   onTap: () {
-                    print("Navigate to Sign-Up");
+                    // Navigate to SignUpPage
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const SignUpPage(),
+                      ),
+                    );
                   },
                   child: const Text(
                     "Don't have an account yet?",
