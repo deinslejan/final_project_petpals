@@ -3,7 +3,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'addPetPage.dart';
-import 'editPetPage.dart'; // Import EditPetPage
+import 'editPetPage.dart';
+import 'userPictures.dart'; // Import EditPetPage
 
 class EditProfilePage extends StatefulWidget {
   @override
@@ -74,6 +75,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
   @override
   Widget build(BuildContext context) {
     User? currentUser = _auth.currentUser;
+    String userEmail = currentUser?.email ?? '';
+    final profileImagePath = AssetManager.getProfileImage(userEmail);
 
     return Scaffold(
       backgroundColor: Color(0xFFFFF9E5),
@@ -102,7 +105,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                   CircleAvatar(
                     radius: 60,
                     backgroundImage:
-                    AssetImage('assets/profile_placeholder.png'), // Replace with your image asset
+                    AssetImage(profileImagePath)
                   ),
                   Positioned(
                     bottom: 0,
@@ -320,13 +323,30 @@ class PetCard extends StatelessWidget {
     required this.petId,
   });
 
+  String getPetImage(String petName) {
+    // Example logic for getting pet image. You can customize this.
+    // Replace with your logic for fetching pet images based on pet name or other attributes.
+    return petProfilePictures.entries
+        .firstWhere(
+          (entry) => entry.value['name'] == petName,
+      orElse: () => const MapEntry('', {'image': 'images/default.png'}),
+    )
+        .value['image'] ?? 'images/default.png';
+  }
+
   @override
   Widget build(BuildContext context) {
+    String petImage = getPetImage(name); // Get the pet image based on the name
+
     return Card(
       margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
       elevation: 4,
       child: ListTile(
         contentPadding: EdgeInsets.all(16),
+        leading: CircleAvatar(
+          radius: 30,
+          backgroundImage: AssetImage(petImage), // Display pet image here
+        ),
         title: Text(name, style: GoogleFonts.jost(fontWeight: FontWeight.bold)),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -385,5 +405,13 @@ class PetCard extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+class AssetManager {
+  static const String defaultProfileImage = 'assets/profile_placeholder.png';
+
+  static String getProfileImage(String email) {
+    return userProfilePictures[email]?['image'] ?? defaultProfileImage;
   }
 }

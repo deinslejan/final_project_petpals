@@ -3,6 +3,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'hamburger_menu.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';  // Firebase Firestore
 import 'petProfile.dart';
+import 'userPictures.dart';
+import 'package:firebase_auth/firebase_auth.dart'; // Import Firebase Auth
 
 class FindPetpals extends StatefulWidget {
   const FindPetpals({super.key});
@@ -13,6 +15,7 @@ class FindPetpals extends StatefulWidget {
 
 class _FindPetpalsState extends State<FindPetpals> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
   List<Map<String, dynamic>> _foundPets = [];
 
   @override
@@ -20,17 +23,24 @@ class _FindPetpalsState extends State<FindPetpals> {
     super.initState();
     _fetchPets();
   }
-// Declare a list to hold the original pets list (unfiltered)
+
+  // Declare a list to hold the original pets list (unfiltered)
   List<Map<String, dynamic>> allPets = [];
 
-// Fetch pets from Firestore
+  // Fetch pets from Firestore
   Future<void> _fetchPets() async {
     List<Map<String, dynamic>> results = [];
     try {
+      // Get the current user's UID
+      String currentUserUid = _auth.currentUser?.uid ?? '';
+
       // Fetch all users
       QuerySnapshot usersSnapshot = await _firestore.collection('users').get();
 
       for (var userDoc in usersSnapshot.docs) {
+        // Skip the current user's pets
+        if (userDoc.id == currentUserUid) continue;
+
         QuerySnapshot petsSnapshot = await _firestore
             .collection('users')
             .doc(userDoc.id)
@@ -40,12 +50,21 @@ class _FindPetpalsState extends State<FindPetpals> {
         for (var petDoc in petsSnapshot.docs) {
           var petData = petDoc.data() as Map<String, dynamic>;
 
+          // Get pet's image from petProfilePictures map based on the name
+          String petName = petData['name'] ?? 'Unknown Pet';
+          String petImage = petProfilePictures.entries
+              .firstWhere(
+                (entry) => entry.value['name'] == petName,
+            orElse: () => const MapEntry('', {'image': 'images/default.png'}),
+          )
+              .value['image'] ?? 'images/default.png'; // Default image if no match is found
+
           // Add pet details to results
           results.add({
-            "name": petData['name'] ?? 'Unknown Pet',
+            "name": petName,
             "breed": petData['breed'] ?? 'Unknown Breed',
             "location": petData['location'] ?? 'Unknown Location',
-            "image": petData['image'] ?? 'images/default.png',
+            "image": petImage,
           });
         }
       }
@@ -60,7 +79,7 @@ class _FindPetpalsState extends State<FindPetpals> {
     });
   }
 
-// Filtering function
+  // Filtering function
   void _runFilter(String enteredKeyword) {
     List<Map<String, dynamic>> results = [];
 
