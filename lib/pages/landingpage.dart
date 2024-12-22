@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'findPetpalspage.dart';
+import 'chatPage.dart';
 import 'loginpage.dart';
 import 'signup.dart';
 
@@ -17,7 +17,7 @@ class LandingPage extends StatelessWidget {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (context) => const FindPetpals(), // Redirect to home screen
+            builder: (context) => const ChatPage(), // Redirect to home screen
           ),
         );
       });
